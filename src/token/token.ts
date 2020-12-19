@@ -26,7 +26,6 @@ export const TokenTypes = {
   LET: "LET",
 } as const;
 
-export type Token = {
-  type: TokenType;
-  literal: string;
+export class Token {
+  constructor(public type: TokenType, public literal: string) {}
 };
