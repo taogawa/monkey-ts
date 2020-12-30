@@ -31,12 +31,22 @@ export const TokenTypes = {
   // Keywords
   FUNCTION: 'FUNCTION',
   LET: 'LET',
+  TRUE: 'TRUE',
+  FALSE: 'FALSE',
+  IF: 'IF',
+  ELSE: 'ELSE',
+  RETURN: 'RETURN',
 } as const;
 
 const Keywords: { [key: string]: TokenType } = {
   fn: TokenTypes.FUNCTION,
   let: TokenTypes.LET,
-};
+  true: TokenTypes.TRUE,
+  false: TokenTypes.FALSE,
+  if: TokenTypes.IF,
+  else: TokenTypes.ELSE,
+  return: TokenTypes.RETURN,
+} as const;
 
 export class Token {
   constructor(public type: TokenType, public literal: string) {}
