@@ -34,6 +34,27 @@ export class Lexer {
       case ';':
         tok = new Token(TokenTypes.SEMICOLON, this.ch);
         break;
+      case '+':
+        tok = new Token(TokenTypes.PLUS, this.ch);
+        break;
+      case '-':
+        tok = new Token(TokenTypes.MINUS, this.ch);
+        break;
+      case '!':
+        tok = new Token(TokenTypes.BANG, this.ch);
+        break;
+      case '*':
+        tok = new Token(TokenTypes.ASTERISK, this.ch);
+        break;
+      case '/':
+        tok = new Token(TokenTypes.SLASH, this.ch);
+        break;
+      case '<':
+        tok = new Token(TokenTypes.LT, this.ch);
+        break;
+      case '>':
+        tok = new Token(TokenTypes.GT, this.ch);
+        break;
       case '(':
         tok = new Token(TokenTypes.LPAREN, this.ch);
         break;
@@ -42,9 +63,6 @@ export class Lexer {
         break;
       case ',':
         tok = new Token(TokenTypes.COMMA, this.ch);
-        break;
-      case '+':
-        tok = new Token(TokenTypes.PLUS, this.ch);
         break;
       case '{':
         tok = new Token(TokenTypes.LBRACE, this.ch);
