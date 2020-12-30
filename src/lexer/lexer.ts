@@ -29,7 +29,14 @@ export class Lexer {
     this.skipWhitespace();
     switch (this.ch) {
       case '=':
-        tok = new Token(TokenTypes.ASSIGN, this.ch);
+        if (this.peekChar() === '=') {
+          const ch = this.ch;
+          this.readChar();
+          const literal = `${ch}${this.ch}`;
+          tok = new Token(TokenTypes.EQ, literal);
+        } else {
+          tok = new Token(TokenTypes.ASSIGN, this.ch);
+        }
         break;
       case ';':
         tok = new Token(TokenTypes.SEMICOLON, this.ch);
@@ -41,7 +48,14 @@ export class Lexer {
         tok = new Token(TokenTypes.MINUS, this.ch);
         break;
       case '!':
-        tok = new Token(TokenTypes.BANG, this.ch);
+        if (this.peekChar() === '=') {
+          const ch = this.ch;
+          this.readChar();
+          const literal = `${ch}${this.ch}`;
+          tok = new Token(TokenTypes.NOT_EQ, literal);
+        } else {
+          tok = new Token(TokenTypes.BANG, this.ch);
+        }
         break;
       case '*':
         tok = new Token(TokenTypes.ASTERISK, this.ch);
@@ -90,6 +104,12 @@ export class Lexer {
     }
     this.readChar();
     return tok;
+  }
+
+  peekChar(): string {
+    return this.readPosition >= this.input.length
+      ? ''
+      : this.input[this.readPosition];
   }
 
   readIdentifier(): string {

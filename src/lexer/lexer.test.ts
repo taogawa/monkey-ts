@@ -17,7 +17,10 @@ if (5 < 10) {
 	return true;
 } else {
 	return false;
-}`;
+}
+10 == 10;
+10 != 9;
+`;
 
   const tests: Array<{
     expectedType: TokenType;
@@ -88,6 +91,14 @@ if (5 < 10) {
     { expectedType: TokenTypes.FALSE, expectedLiteral: 'false' },
     { expectedType: TokenTypes.SEMICOLON, expectedLiteral: ';' },
     { expectedType: TokenTypes.RBRACE, expectedLiteral: '}' },
+    { expectedType: TokenTypes.INT, expectedLiteral: '10' },
+    { expectedType: TokenTypes.EQ, expectedLiteral: '==' },
+    { expectedType: TokenTypes.INT, expectedLiteral: '10' },
+    { expectedType: TokenTypes.SEMICOLON, expectedLiteral: ';' },
+    { expectedType: TokenTypes.INT, expectedLiteral: '10' },
+    { expectedType: TokenTypes.NOT_EQ, expectedLiteral: '!=' },
+    { expectedType: TokenTypes.INT, expectedLiteral: '9' },
+    { expectedType: TokenTypes.SEMICOLON, expectedLiteral: ';' },
     { expectedType: TokenTypes.EOF, expectedLiteral: '' },
   ];
   const l = new Lexer(input);
