@@ -144,3 +144,6 @@ dist
 
 .vscode/*
 .history/
+
+# Ignore built ts files
+lib/**/*
