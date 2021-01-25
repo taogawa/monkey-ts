@@ -1,4 +1,4 @@
-import { LetStatement, Statement } from '../ast/ast';
+import { LetStatement, ReturnStatement, Statement } from '../ast/ast';
 import { Parser } from '../parser/parser';
 import { Lexer } from '../lexer/lexer';
 
@@ -28,6 +28,25 @@ let foobar = 838383;
   tests.forEach((tt, i) => {
     const stmt = program.statements[i];
     testLetStatement(stmt, tt.expectedIdentifier);
+  });
+});
+
+test('return statement', () => {
+  const input = `
+return 5;
+return 10;
+return 993322;
+`;
+
+  const l = new Lexer(input);
+  const p = new Parser(l);
+  const program = p.parseProgram();
+  checkParserErrors(p);
+
+  expect(program.statements.length).toBe(3);
+  program.statements.forEach((stmt) => {
+    const returnStatement = stmt as ReturnStatement;
+    expect(returnStatement.tokenLiteral()).toBe('return');
   });
 });
 

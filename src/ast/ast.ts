@@ -39,11 +39,24 @@ export class LetStatement implements Statement {
     this.token = token;
   }
 
+  statementNode(): void {}
+
   tokenLiteral(): string {
     return this.token.literal;
   }
+}
+
+export class ReturnStatement implements Statement {
+  returnValue!: Expression;
+  constructor(public token: Token) {
+    this.token = token;
+  }
 
   statementNode(): void {}
+
+  tokenLiteral(): string {
+    return this.token.literal;
+  }
 }
 
 // Expressions
