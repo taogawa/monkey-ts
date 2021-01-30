@@ -29,33 +29,45 @@ export class Program implements Node {
       return '';
     }
   }
+
+  toString(): string {
+    return this.statements.join();
+  }
 }
 
 // Statements
 export class LetStatement implements Statement {
   name!: Identifier;
   value!: Expression;
-  constructor(public token: Token) {
-    this.token = token;
-  }
+  constructor(public token: Token) {}
 
   statementNode(): void {}
 
   tokenLiteral(): string {
     return this.token.literal;
+  }
+
+  toString(): string {
+    return `${this.tokenLiteral()} ${this.name} = ${
+      this.value != null ? this.value : ''
+    };`;
   }
 }
 
 export class ReturnStatement implements Statement {
   returnValue!: Expression;
-  constructor(public token: Token) {
-    this.token = token;
-  }
+  constructor(public token: Token) {}
 
   statementNode(): void {}
 
   tokenLiteral(): string {
     return this.token.literal;
+  }
+
+  toString(): string {
+    return `${this.tokenLiteral()} = ${
+      this.returnValue != null ? this.returnValue : ''
+    };`;
   }
 }
 
@@ -63,11 +75,15 @@ export class ReturnStatement implements Statement {
 export class Identifier implements Expression {
   constructor(public token: Token, public value: string) {}
 
+  expressionNode(): void {}
+
   tokenLiteral(): string {
     return this.token.literal;
   }
 
-  expressionNode(): void {}
+  toString(): string {
+    return this.value;
+  }
 }
 
 export class ExpressionStatement implements Statement {
@@ -78,5 +94,9 @@ export class ExpressionStatement implements Statement {
 
   tokenLiteral(): string {
     return this.token.literal;
+  }
+
+  toString(): string {
+    return this.expression != null ? this.expression.toString() : '';
   }
 }
