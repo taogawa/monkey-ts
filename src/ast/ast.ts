@@ -69,3 +69,14 @@ export class Identifier implements Expression {
 
   expressionNode(): void {}
 }
+
+export class ExpressionStatement implements Statement {
+  expression!: Expression;
+  constructor(public token: Token) {}
+
+  statementNode(): void {}
+
+  tokenLiteral(): string {
+    return this.token.literal;
+  }
+}
