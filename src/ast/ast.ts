@@ -71,6 +71,21 @@ export class ReturnStatement implements Statement {
   }
 }
 
+export class ExpressionStatement implements Statement {
+  expression?: Expression;
+  constructor(public token: Token) {}
+
+  statementNode(): void {}
+
+  tokenLiteral(): string {
+    return this.token.literal;
+  }
+
+  toString(): string {
+    return this.expression != null ? this.expression.toString() : '';
+  }
+}
+
 // Expressions
 export class Identifier implements Expression {
   constructor(public token: Token, public value: string) {}
@@ -83,20 +98,5 @@ export class Identifier implements Expression {
 
   toString(): string {
     return this.value;
-  }
-}
-
-export class ExpressionStatement implements Statement {
-  expression!: Expression;
-  constructor(public token: Token) {}
-
-  statementNode(): void {}
-
-  tokenLiteral(): string {
-    return this.token.literal;
-  }
-
-  toString(): string {
-    return this.expression != null ? this.expression.toString() : '';
   }
 }
