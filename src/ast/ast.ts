@@ -100,3 +100,17 @@ export class Identifier implements Expression {
     return this.value;
   }
 }
+
+export class IntegerLiteral implements Expression {
+  constructor(public token: Token, public value: number) {}
+
+  expressionNode(): void {}
+
+  tokenLiteral(): string {
+    return this.token.literal;
+  }
+
+  toString(): string {
+    return this.token.literal;
+  }
+}

@@ -6,6 +6,7 @@ import {
   Identifier,
   ReturnStatement,
   Expression,
+  IntegerLiteral,
 } from '../ast/ast';
 import { Lexer } from '../lexer/lexer';
 import { Token, TokenType, TokenTypes } from '../token/token';
@@ -20,7 +21,7 @@ const Precedences = {
   CALL: 7, // myFunction(X)
 };
 
-type PrefixParseFn = () => Expression;
+type PrefixParseFn = () => Expression | undefined;
 type InfixParseFn = (expression: Expression) => Expression;
 
 export class Parser {
@@ -37,6 +38,7 @@ export class Parser {
 
     this.prefixParseFns = {};
     this.registerPrefix(TokenTypes.IDENT, this.parseIdentifier);
+    this.registerPrefix(TokenTypes.INT, this.parseIntegerLiteral);
 
     this.nextToken();
     this.nextToken();
@@ -139,6 +141,16 @@ export class Parser {
 
   parseIdentifier(): Expression {
     return new Identifier(this.curToken, this.curToken.literal);
+  }
+
+  parseIntegerLiteral(): Expression | undefined {
+    const value = parseInt(this.curToken.literal);
+    if (isNaN(value)) {
+      const msg = `could not parse ${this.curToken.literal} as integer`;
+      this.errors.concat(msg);
+      return undefined;
+    }
+    return new IntegerLiteral(this.curToken, value);
   }
 
   registerPrefix(tokenType: TokenType, fn: PrefixParseFn): void {
