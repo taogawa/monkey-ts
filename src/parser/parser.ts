@@ -7,6 +7,7 @@ import {
   ReturnStatement,
   Expression,
   IntegerLiteral,
+  PrefixExpression,
 } from '../ast/ast';
 import { Lexer } from '../lexer/lexer';
 import { Token, TokenType, TokenTypes } from '../token/token';
@@ -39,6 +40,8 @@ export class Parser {
     this.prefixParseFns = {};
     this.registerPrefix(TokenTypes.IDENT, this.parseIdentifier);
     this.registerPrefix(TokenTypes.INT, this.parseIntegerLiteral);
+    this.registerPrefix(TokenTypes.BANG, this.parsePrefixExpression);
+    this.registerPrefix(TokenTypes.MINUS, this.parsePrefixExpression);
 
     this.nextToken();
     this.nextToken();
@@ -46,6 +49,11 @@ export class Parser {
 
   peekError(t: TokenType): void {
     const msg = `expected next token to be ${t}, got ${this.peekToken.type} instead`;
+    this.errors.push(msg);
+  }
+
+  noPrefixParseFnError(t: TokenType): void {
+    const msg = `no prefix parse function for ${t} found`;
     this.errors.push(msg);
   }
 
@@ -133,6 +141,7 @@ export class Parser {
   parseExpression(precedence: number): Expression | undefined {
     const prefix = this.prefixParseFns[this.curToken.type];
     if (prefix == null) {
+      this.noPrefixParseFnError(this.curToken.type);
       return undefined;
     }
     const leftExp = prefix.call(this);
@@ -151,6 +160,18 @@ export class Parser {
       return undefined;
     }
     return new IntegerLiteral(this.curToken, value);
+  }
+
+  parsePrefixExpression(): Expression {
+    const expression = new PrefixExpression(
+      this.curToken,
+      this.curToken.literal
+    );
+    this.nextToken();
+
+    expression.right = this.parseExpression(Precedences.PREFIX);
+
+    return expression;
   }
 
   registerPrefix(tokenType: TokenType, fn: PrefixParseFn): void {

@@ -5,6 +5,8 @@ import {
   ReturnStatement,
   Statement,
   IntegerLiteral,
+  PrefixExpression,
+  Expression,
 } from '../ast/ast';
 import { Parser } from '../parser/parser';
 import { Lexer } from '../lexer/lexer';
@@ -95,11 +97,46 @@ test('integer literal expression', () => {
   expect(literal.tokenLiteral()).toBe('5');
 });
 
+test('parsing prefix expression', () => {
+  const prefixTests: Array<{
+    input: string;
+    operator: string;
+    integerValue: number;
+  }> = [
+    { input: '!5;', operator: '!', integerValue: 5 },
+    { input: '-15;', operator: '-', integerValue: 15 },
+  ];
+
+  prefixTests.forEach((tt) => {
+    const l = new Lexer(tt.input);
+    const p = new Parser(l);
+    const program = p.parseProgram();
+    checkParserErrors(p);
+
+    expect(program.statements.length).toBe(1);
+    const stmt = program.statements[0] as ExpressionStatement;
+    expect(stmt.constructor).toBe(ExpressionStatement);
+
+    const exp = stmt.expression as PrefixExpression;
+    expect(exp.constructor).toBe(PrefixExpression);
+    expect(exp.operator).toBe(tt.operator);
+    testIntegerLiteral(exp.right, tt.integerValue);
+  });
+});
+
 const testLetStatement = (s: Statement, name: string): void => {
   expect(s.tokenLiteral()).toBe('let');
   const letStmt = s as LetStatement;
+  expect(letStmt.constructor).toBe(LetStatement);
   expect(letStmt.name.value).toBe(name);
   expect(letStmt.name.tokenLiteral()).toBe(name);
+};
+
+const testIntegerLiteral = (il: Expression | undefined, value: number): void => {
+  const integ = il as IntegerLiteral;
+  expect(integ.constructor).toBe(IntegerLiteral);
+  expect(integ.value).toBe(value);
+  expect(integ.tokenLiteral()).toBe(value.toString());
 };
 
 const checkParserErrors = (p: Parser): void => {
