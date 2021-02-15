@@ -14,16 +14,6 @@ export class Lexer {
     this.readChar();
   }
 
-  readChar(): void {
-    if (this.readPosition >= this.input.length) {
-      this.ch = '';
-    } else {
-      this.ch = this.input[this.readPosition];
-    }
-    this.position = this.readPosition;
-    this.readPosition += 1;
-  }
-
   nextToken(): Token {
     let tok: Token;
     this.skipWhitespace();
@@ -106,13 +96,23 @@ export class Lexer {
     return tok;
   }
 
-  peekChar(): string {
+  private readChar(): void {
+    if (this.readPosition >= this.input.length) {
+      this.ch = '';
+    } else {
+      this.ch = this.input[this.readPosition];
+    }
+    this.position = this.readPosition;
+    this.readPosition += 1;
+  }
+
+  private peekChar(): string {
     return this.readPosition >= this.input.length
       ? ''
       : this.input[this.readPosition];
   }
 
-  readIdentifier(): string {
+  private readIdentifier(): string {
     const position = this.position;
     while (this.isLetter(this.ch)) {
       this.readChar();
@@ -120,7 +120,7 @@ export class Lexer {
     return this.input.slice(position, this.position);
   }
 
-  readNumber(): string {
+  private readNumber(): string {
     const position = this.position;
     while (this.isDigit(this.ch)) {
       this.readChar();
@@ -128,15 +128,15 @@ export class Lexer {
     return this.input.slice(position, this.position);
   }
 
-  isLetter(ch: string): boolean {
+  private isLetter(ch: string): boolean {
     return Lexer.LETTER_REGEX.test(ch);
   }
 
-  isDigit(ch: string): boolean {
+  private isDigit(ch: string): boolean {
     return Lexer.NUMBER_REGEX.test(ch);
   }
 
-  skipWhitespace(): void {
+  private skipWhitespace(): void {
     while (Lexer.WHITESPACE_REGEX.test(this.ch)) {
       this.readChar();
     }
