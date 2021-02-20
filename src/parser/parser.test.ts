@@ -160,6 +160,71 @@ test('parsing infix expression', () => {
   });
 });
 
+test('operator precedence parsing', () => {
+  const tests: Array<{
+    input: string;
+    expected: string;
+  }> = [
+    {
+      input: '-a * b',
+      expected: '((-a) * b)',
+    },
+    {
+      input: '!-a',
+      expected: '(!(-a))',
+    },
+    {
+      input: 'a + b + c',
+      expected: '((a + b) + c)',
+    },
+    {
+      input: 'a + b - c',
+      expected: '((a + b) - c)',
+    },
+    {
+      input: 'a * b * c',
+      expected: '((a * b) * c)',
+    },
+    {
+      input: 'a * b / c',
+      expected: '((a * b) / c)',
+    },
+    {
+      input: 'a + b / c',
+      expected: '(a + (b / c))',
+    },
+    {
+      input: 'a + b * c + d / e - f',
+      expected: '(((a + (b * c)) + (d / e)) - f)',
+    },
+    {
+      input: '3 + 4; -5 * 5',
+      expected: '(3 + 4)((-5) * 5)',
+    },
+    {
+      input: '5 > 4 == 3 < 4',
+      expected: '((5 > 4) == (3 < 4))',
+    },
+    {
+      input: '5 < 4 != 3 > 4',
+      expected: '((5 < 4) != (3 > 4))',
+    },
+    {
+      input: '3 + 4 * 5 == 3 * 1 + 4 * 5',
+      expected: '((3 + (4 * 5)) == ((3 * 1) + (4 * 5)))',
+    },
+  ];
+  tests.forEach((tt) => {
+    const l = new Lexer(tt.input);
+    const p = new Parser(l);
+    const program = p.parseProgram();
+    checkParserErrors(p);
+
+    const actual = program.toString();
+    expect(actual).toBe(tt.expected);
+  });
+});
+
 const testLetStatement = (s: Statement, name: string): void => {
   expect(s.tokenLiteral()).toBe('let');
   const letStmt = s as LetStatement;

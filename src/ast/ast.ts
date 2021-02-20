@@ -31,7 +31,7 @@ export class Program implements Node {
   }
 
   toString(): string {
-    return this.statements.join();
+    return this.statements.join('');
   }
 }
 
