@@ -6,6 +6,7 @@ import {
   Statement,
   IntegerLiteral,
   PrefixExpression,
+  InfixExpression,
   Expression,
 } from '../ast/ast';
 import { Parser } from '../parser/parser';
@@ -124,6 +125,41 @@ test('parsing prefix expression', () => {
   });
 });
 
+test('parsing infix expression', () => {
+  const infixTests: Array<{
+    input: string;
+    leftValue: number;
+    operator: string;
+    rightValue: number;
+  }> = [
+    { input: '5 + 5;', leftValue: 5, operator: '+', rightValue: 5 },
+    { input: '5 - 5;', leftValue: 5, operator: '-', rightValue: 5 },
+    { input: '5 * 5;', leftValue: 5, operator: '*', rightValue: 5 },
+    { input: '5 / 5;', leftValue: 5, operator: '/', rightValue: 5 },
+    { input: '5 > 5;', leftValue: 5, operator: '>', rightValue: 5 },
+    { input: '5 < 5;', leftValue: 5, operator: '<', rightValue: 5 },
+    { input: '5 == 5;', leftValue: 5, operator: '==', rightValue: 5 },
+    { input: '5 != 5;', leftValue: 5, operator: '!=', rightValue: 5 },
+  ];
+  infixTests.forEach((tt) => {
+    const l = new Lexer(tt.input);
+    const p = new Parser(l);
+    const program = p.parseProgram();
+    checkParserErrors(p);
+
+    expect(program.statements.length).toBe(1);
+    const stmt = program.statements[0] as ExpressionStatement;
+    expect(stmt.constructor).toBe(ExpressionStatement);
+
+    const exp = stmt.expression as InfixExpression;
+    expect(exp.constructor).toBe(InfixExpression);
+    expect(exp.operator).toBe(tt.operator);
+    testIntegerLiteral(exp.left, tt.leftValue);
+    expect(exp.operator).toBe(tt.operator);
+    testIntegerLiteral(exp.right, tt.rightValue);
+  });
+});
+
 const testLetStatement = (s: Statement, name: string): void => {
   expect(s.tokenLiteral()).toBe('let');
   const letStmt = s as LetStatement;
@@ -132,7 +168,10 @@ const testLetStatement = (s: Statement, name: string): void => {
   expect(letStmt.name.tokenLiteral()).toBe(name);
 };
 
-const testIntegerLiteral = (il: Expression | undefined, value: number): void => {
+const testIntegerLiteral = (
+  il: Expression | undefined,
+  value: number
+): void => {
   const integ = il as IntegerLiteral;
   expect(integ.constructor).toBe(IntegerLiteral);
   expect(integ.value).toBe(value);
