@@ -188,7 +188,7 @@ export class Parser {
       }
 
       this.nextToken();
-      leftExp = infix.call(this, leftExp!);
+      leftExp = infix.call(this, leftExp!); // eslint-disable-line
     }
     return leftExp;
   }

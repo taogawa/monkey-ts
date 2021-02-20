@@ -41,7 +41,9 @@ export class LetStatement implements Statement {
   value!: Expression;
   constructor(public token: Token) {}
 
-  statementNode(): void {}
+  statementNode(): void {
+    return;
+  }
 
   tokenLiteral(): string {
     return this.token.literal;
@@ -58,7 +60,9 @@ export class ReturnStatement implements Statement {
   returnValue!: Expression;
   constructor(public token: Token) {}
 
-  statementNode(): void {}
+  statementNode(): void {
+    return;
+  }
 
   tokenLiteral(): string {
     return this.token.literal;
@@ -75,7 +79,9 @@ export class ExpressionStatement implements Statement {
   expression?: Expression;
   constructor(public token: Token) {}
 
-  statementNode(): void {}
+  statementNode(): void {
+    return;
+  }
 
   tokenLiteral(): string {
     return this.token.literal;
@@ -90,7 +96,9 @@ export class ExpressionStatement implements Statement {
 export class Identifier implements Expression {
   constructor(public token: Token, public value: string) {}
 
-  expressionNode(): void {}
+  expressionNode(): void {
+    return;
+  }
 
   tokenLiteral(): string {
     return this.token.literal;
@@ -104,7 +112,9 @@ export class Identifier implements Expression {
 export class IntegerLiteral implements Expression {
   constructor(public token: Token, public value: number) {}
 
-  expressionNode(): void {}
+  expressionNode(): void {
+    return;
+  }
 
   tokenLiteral(): string {
     return this.token.literal;
@@ -120,7 +130,9 @@ export class PrefixExpression implements Expression {
 
   // The prefix token, e.g. !
   constructor(public token: Token, public operator: string) {}
-  expressionNode(): void {}
+  expressionNode(): void {
+    return;
+  }
 
   tokenLiteral(): string {
     return this.token.literal;
@@ -139,7 +151,9 @@ export class InfixExpression implements Expression {
     public operator: string,
     public left: Expression
   ) {}
-  expressionNode(): void {}
+  expressionNode(): void {
+    return;
+  }
 
   tokenLiteral(): string {
     return this.token.literal;
