@@ -102,10 +102,12 @@ test('parsing prefix expression', () => {
   const prefixTests: Array<{
     input: string;
     operator: string;
-    integerValue: number;
+    value: number | string;
   }> = [
-    { input: '!5;', operator: '!', integerValue: 5 },
-    { input: '-15;', operator: '-', integerValue: 15 },
+    { input: '!5;', operator: '!', value: 5 },
+    { input: '-15;', operator: '-', value: 15 },
+    { input: '!foobar;', operator: '!', value: 'foobar' },
+    { input: '-foobar;', operator: '-', value: 'foobar' },
   ];
 
   prefixTests.forEach((tt) => {
@@ -121,16 +123,16 @@ test('parsing prefix expression', () => {
     const exp = stmt.expression as PrefixExpression;
     expect(exp.constructor).toBe(PrefixExpression);
     expect(exp.operator).toBe(tt.operator);
-    testIntegerLiteral(exp.right, tt.integerValue);
+    testLiteralExpression(exp.right, tt.value);
   });
 });
 
 test('parsing infix expression', () => {
   const infixTests: Array<{
     input: string;
-    leftValue: number;
+    leftValue: number | string;
     operator: string;
-    rightValue: number;
+    rightValue: number | string;
   }> = [
     { input: '5 + 5;', leftValue: 5, operator: '+', rightValue: 5 },
     { input: '5 - 5;', leftValue: 5, operator: '-', rightValue: 5 },
@@ -140,6 +142,54 @@ test('parsing infix expression', () => {
     { input: '5 < 5;', leftValue: 5, operator: '<', rightValue: 5 },
     { input: '5 == 5;', leftValue: 5, operator: '==', rightValue: 5 },
     { input: '5 != 5;', leftValue: 5, operator: '!=', rightValue: 5 },
+    {
+      input: 'foobar + barfoo;',
+      leftValue: 'foobar',
+      operator: '+',
+      rightValue: 'barfoo',
+    },
+    {
+      input: 'foobar - barfoo;',
+      leftValue: 'foobar',
+      operator: '-',
+      rightValue: 'barfoo',
+    },
+    {
+      input: 'foobar * barfoo;',
+      leftValue: 'foobar',
+      operator: '*',
+      rightValue: 'barfoo',
+    },
+    {
+      input: 'foobar / barfoo;',
+      leftValue: 'foobar',
+      operator: '/',
+      rightValue: 'barfoo',
+    },
+    {
+      input: 'foobar > barfoo;',
+      leftValue: 'foobar',
+      operator: '>',
+      rightValue: 'barfoo',
+    },
+    {
+      input: 'foobar < barfoo;',
+      leftValue: 'foobar',
+      operator: '<',
+      rightValue: 'barfoo',
+    },
+    {
+      input: 'foobar == barfoo;',
+      leftValue: 'foobar',
+      operator: '==',
+      rightValue: 'barfoo',
+    },
+    {
+      input: 'foobar != barfoo;',
+      leftValue: 'foobar',
+      operator: '!=',
+      rightValue: 'barfoo',
+    },
   ];
   infixTests.forEach((tt) => {
     const l = new Lexer(tt.input);
@@ -152,11 +202,7 @@ test('parsing infix expression', () => {
     expect(stmt.constructor).toBe(ExpressionStatement);
 
     const exp = stmt.expression as InfixExpression;
-    expect(exp.constructor).toBe(InfixExpression);
-    expect(exp.operator).toBe(tt.operator);
-    testIntegerLiteral(exp.left, tt.leftValue);
-    expect(exp.operator).toBe(tt.operator);
-    testIntegerLiteral(exp.right, tt.rightValue);
+    testInfixExpression(exp, tt.leftValue, tt.operator, tt.rightValue);
   });
 });
 
@@ -233,6 +279,36 @@ const testLetStatement = (s: Statement, name: string): void => {
   expect(letStmt.name.tokenLiteral()).toBe(name);
 };
 
+const testInfixExpression = (
+  exp: Expression,
+  left: number | string,
+  operator: string,
+  right: number | string
+): void => {
+  const opExp = exp as InfixExpression;
+  expect(opExp.constructor).toBe(InfixExpression);
+  testLiteralExpression(opExp.left, left);
+
+  expect(opExp.operator).toBe(operator);
+  testLiteralExpression(opExp.right, right);
+};
+
+const testLiteralExpression = (
+  exp: Expression | undefined,
+  expected: number | string
+): void => {
+  switch (typeof expected) {
+    case 'number':
+      testIntegerLiteral(exp, expected as number);
+      break;
+    case 'string':
+      testIdentifier(exp, expected as string);
+      break;
+    default:
+      throw new Error(`type of exp not handled. got=${exp}`);
+  }
+};
+
 const testIntegerLiteral = (
   il: Expression | undefined,
   value: number
@@ -241,6 +317,13 @@ const testIntegerLiteral = (
   expect(integ.constructor).toBe(IntegerLiteral);
   expect(integ.value).toBe(value);
   expect(integ.tokenLiteral()).toBe(value.toString());
+};
+
+const testIdentifier = (exp: Expression | undefined, value: string): void => {
+  const ident = exp as Identifier;
+  expect(ident.constructor).toBe(Identifier);
+  expect(ident.value).toBe(value);
+  expect(ident.tokenLiteral()).toBe(value);
 };
 
 const checkParserErrors = (p: Parser): void => {
