@@ -103,12 +103,14 @@ test('parsing prefix expression', () => {
   const prefixTests: Array<{
     input: string;
     operator: string;
-    value: number | string;
+    value: number | string | boolean;
   }> = [
     { input: '!5;', operator: '!', value: 5 },
     { input: '-15;', operator: '-', value: 15 },
     { input: '!foobar;', operator: '!', value: 'foobar' },
     { input: '-foobar;', operator: '-', value: 'foobar' },
+    { input: '!true;', operator: '!', value: true },
+    { input: '!false;', operator: '!', value: false },
   ];
 
   prefixTests.forEach((tt) => {
@@ -131,9 +133,9 @@ test('parsing prefix expression', () => {
 test('parsing infix expression', () => {
   const infixTests: Array<{
     input: string;
-    leftValue: number | string;
+    leftValue: number | string | boolean;
     operator: string;
-    rightValue: number | string;
+    rightValue: number | string | boolean;
   }> = [
     { input: '5 + 5;', leftValue: 5, operator: '+', rightValue: 5 },
     { input: '5 - 5;', leftValue: 5, operator: '-', rightValue: 5 },
@@ -190,6 +192,24 @@ test('parsing infix expression', () => {
       leftValue: 'foobar',
       operator: '!=',
       rightValue: 'barfoo',
+    },
+    {
+      input: 'true == true',
+      leftValue: true,
+      operator: '==',
+      rightValue: true,
+    },
+    {
+      input: 'true != false',
+      leftValue: true,
+      operator: '!=',
+      rightValue: false,
+    },
+    {
+      input: 'false == false',
+      leftValue: false,
+      operator: '==',
+      rightValue: false,
     },
   ];
   infixTests.forEach((tt) => {
@@ -260,6 +280,14 @@ test('operator precedence parsing', () => {
       input: '3 + 4 * 5 == 3 * 1 + 4 * 5',
       expected: '((3 + (4 * 5)) == ((3 * 1) + (4 * 5)))',
     },
+    {
+      input: 'true',
+      expected: 'true',
+    },
+    {
+      input: 'false',
+      expected: 'false',
+    },
   ];
   tests.forEach((tt) => {
     const l = new Lexer(tt.input);
@@ -307,9 +335,9 @@ const testLetStatement = (s: Statement, name: string): void => {
 
 const testInfixExpression = (
   exp: Expression,
-  left: number | string,
+  left: number | string | boolean,
   operator: string,
-  right: number | string
+  right: number | string | boolean
 ): void => {
   const opExp = exp as InfixExpression;
   expect(opExp.constructor).toBe(InfixExpression);
@@ -321,7 +349,7 @@ const testInfixExpression = (
 
 const testLiteralExpression = (
   exp: Expression | undefined,
-  expected: number | string
+  expected: number | string | boolean
 ): void => {
   switch (typeof expected) {
     case 'number':
@@ -329,6 +357,9 @@ const testLiteralExpression = (
       break;
     case 'string':
       testIdentifier(exp, expected as string);
+      break;
+    case 'boolean':
+      testBooleanLiteral(exp, expected as boolean);
       break;
     default:
       throw new Error(`type of exp not handled. got=${exp}`);
@@ -350,6 +381,17 @@ const testIdentifier = (exp: Expression | undefined, value: string): void => {
   expect(ident.constructor).toBe(Identifier);
   expect(ident.value).toBe(value);
   expect(ident.tokenLiteral()).toBe(value);
+};
+
+const testBooleanLiteral = (
+  exp: Expression | undefined,
+  value: boolean
+): void => {
+  const bo = exp as Bool;
+  expect(bo.constructor).toBe(Bool);
+
+  expect(bo.value).toBe(value);
+  expect(bo.tokenLiteral()).toBe(value.toString());
 };
 
 const checkParserErrors = (p: Parser): void => {
