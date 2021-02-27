@@ -4,6 +4,7 @@ import {
   Statement,
   Program,
   Identifier,
+  Bool,
   ReturnStatement,
   Expression,
   IntegerLiteral,
@@ -55,6 +56,8 @@ export class Parser {
     this.registerPrefix(TokenTypes.INT, this.parseIntegerLiteral);
     this.registerPrefix(TokenTypes.BANG, this.parsePrefixExpression);
     this.registerPrefix(TokenTypes.MINUS, this.parsePrefixExpression);
+    this.registerPrefix(TokenTypes.TRUE, this.parseBool);
+    this.registerPrefix(TokenTypes.FALSE, this.parseBool);
 
     this.infixParseFns = {};
     this.registerInfix(TokenTypes.PLUS, this.parseInfixExpression);
@@ -195,6 +198,10 @@ export class Parser {
 
   private parseIdentifier(): Expression {
     return new Identifier(this.curToken, this.curToken.literal);
+  }
+
+  private parseBool(): Expression {
+    return new Bool(this.curToken, this.curTokenIs(TokenTypes.TRUE));
   }
 
   private parseIntegerLiteral(): Expression | undefined {

@@ -109,6 +109,22 @@ export class Identifier implements Expression {
   }
 }
 
+export class Bool implements Expression {
+  constructor(public token: Token, public value: boolean) {}
+
+  expressionNode(): void {
+    return;
+  }
+
+  tokenLiteral(): string {
+    return this.token.literal;
+  }
+
+  toString(): string {
+    return this.token.literal;
+  }
+}
+
 export class IntegerLiteral implements Expression {
   constructor(public token: Token, public value: number) {}
 

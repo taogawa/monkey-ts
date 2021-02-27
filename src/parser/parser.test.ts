@@ -1,6 +1,7 @@
 import {
   ExpressionStatement,
   Identifier,
+  Bool,
   LetStatement,
   ReturnStatement,
   Statement,
@@ -268,6 +269,31 @@ test('operator precedence parsing', () => {
 
     const actual = program.toString();
     expect(actual).toBe(tt.expected);
+  });
+});
+
+test('boolean expression', () => {
+  const tests: Array<{
+    input: string;
+    expectedBoolean: boolean;
+  }> = [
+    { input: 'true;', expectedBoolean: true },
+    { input: 'false;', expectedBoolean: false },
+  ];
+
+  tests.forEach((tt) => {
+    const l = new Lexer(tt.input);
+    const p = new Parser(l);
+    const program = p.parseProgram();
+    checkParserErrors(p);
+
+    expect(program.statements.length).toBe(1);
+    const stmt = program.statements[0] as ExpressionStatement;
+    expect(stmt.constructor).toBe(ExpressionStatement);
+
+    const bool = stmt.expression as Bool;
+    expect(bool.constructor).toBe(Bool);
+    expect(bool.value).toBe(tt.expectedBoolean);
   });
 });
 
