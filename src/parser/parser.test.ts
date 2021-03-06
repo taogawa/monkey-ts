@@ -10,6 +10,7 @@ import {
   InfixExpression,
   Expression,
   IfExpression,
+  FunctionLiteral,
 } from '../ast/ast';
 import { Parser } from '../parser/parser';
 import { Lexer } from '../lexer/lexer';
@@ -399,6 +400,54 @@ test('if else expression', () => {
   const alternative = exp.alternative.statements[0] as ExpressionStatement;
   expect(alternative.constructor).toBe(ExpressionStatement);
   testIdentifier(alternative.expression, 'y');
+});
+
+test('function literal parsing', () => {
+  const input = 'fn(x, y) { x + y; }';
+  const l = new Lexer(input);
+  const p = new Parser(l);
+  const program = p.parseProgram();
+  checkParserErrors(p);
+
+  expect(program.statements.length).toBe(1);
+  const stmt = program.statements[0] as ExpressionStatement;
+  expect(stmt.constructor).toBe(ExpressionStatement);
+
+  const func = stmt.expression as FunctionLiteral;
+  expect(func.constructor).toBe(FunctionLiteral);
+  expect(func.parameters.length).toBe(2);
+  testLiteralExpression(func.parameters[0], 'x');
+  testLiteralExpression(func.parameters[1], 'y');
+
+  expect(func.body.statements.length).toBe(1);
+  const bodyStmt = func.body.statements[0] as ExpressionStatement;
+  expect(bodyStmt.constructor).toBe(ExpressionStatement);
+  testInfixExpression(bodyStmt.expression, 'x', '+', 'y');
+});
+
+test('function parameter parsing', () => {
+  const tests: Array<{
+    input: string;
+    expectedParams: string[];
+  }> = [
+    { input: 'fn() {};', expectedParams: [] },
+    { input: 'fn(x) {};', expectedParams: ['x'] },
+    { input: 'fn(x, y, z) {};', expectedParams: ['x', 'y', 'z'] },
+  ];
+
+  tests.forEach((tt) => {
+    const l = new Lexer(tt.input);
+    const p = new Parser(l);
+    const program = p.parseProgram();
+    checkParserErrors(p);
+
+    const stmt = program.statements[0] as ExpressionStatement;
+    const func = stmt.expression as FunctionLiteral;
+    expect(func.parameters.length).toBe(tt.expectedParams.length);
+    tt.expectedParams.forEach((ident, i) => {
+      testLiteralExpression(func.parameters[i], ident);
+    });
+  });
 });
 
 const testLetStatement = (s: Statement, name: string): void => {

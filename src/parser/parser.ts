@@ -1,6 +1,7 @@
 import {
   BlockStatement,
   ExpressionStatement,
+  FunctionLiteral,
   LetStatement,
   Statement,
   Program,
@@ -62,6 +63,7 @@ export class Parser {
     this.registerPrefix(TokenTypes.FALSE, this.parseBool);
     this.registerPrefix(TokenTypes.LPAREN, this.parseGroupedExpression);
     this.registerPrefix(TokenTypes.IF, this.parseIfExpression);
+    this.registerPrefix(TokenTypes.FUNCTION, this.parseFunctionLiteral)
 
     this.infixParseFns = {};
     this.registerInfix(TokenTypes.PLUS, this.parseInfixExpression);
@@ -263,6 +265,50 @@ export class Parser {
       this.nextToken();
     }
     return block;
+  }
+
+  private parseFunctionLiteral(): Expression | undefined {
+    const lit = new FunctionLiteral(this.curToken);
+
+    if (!this.expectPeek(TokenTypes.LPAREN)) {
+      return undefined;
+    }
+
+    lit.parameters = this.parseFunctionParameters();
+
+    if (!this.expectPeek(TokenTypes.LBRACE)) {
+      return undefined;
+    }
+
+    lit.body = this.parseBlockStatement();
+
+    return lit;
+  }
+
+  private parseFunctionParameters(): Identifier[] {
+    let identifiers: Identifier[] = [];
+
+    if (this.peekTokenIs(TokenTypes.RPAREN)) {
+      this.nextToken();
+      return identifiers;
+    }
+
+    this.nextToken();
+
+    const ident = new Identifier(this.curToken, this.curToken.literal);
+    identifiers.push(ident);
+
+    while (this.peekTokenIs(TokenTypes.COMMA)) {
+      this.nextToken();
+      this.nextToken();
+      identifiers.push(new Identifier(this.curToken, this.curToken.literal));
+    }
+
+    if (!this.expectPeek(TokenTypes.RPAREN)) {
+      return [];
+    }
+
+    return identifiers;
   }
 
   private parseIntegerLiteral(): Expression | undefined {

@@ -233,3 +233,29 @@ export class IfExpression implements Expression {
     return out;
   }
 }
+
+export class FunctionLiteral implements Expression {
+  parameters!: Identifier[];
+  body!: BlockStatement;
+
+  constructor(
+    public token: Token // The 'fn' token
+  ) {
+    this.parameters = [];
+  }
+
+  expressionNode(): void {
+    return;
+  }
+
+  tokenLiteral(): string {
+    return this.token.literal;
+  }
+
+  toString(): string {
+    const params: string[] = this.parameters.map((p) => {
+      return p.toString();
+    });
+    return `${this.tokenLiteral()}(${params.join(', ')})${this.body}`;
+  }
+}
