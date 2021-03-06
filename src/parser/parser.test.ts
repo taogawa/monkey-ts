@@ -9,6 +9,7 @@ import {
   PrefixExpression,
   InfixExpression,
   Expression,
+  IfExpression,
 } from '../ast/ast';
 import { Parser } from '../parser/parser';
 import { Lexer } from '../lexer/lexer';
@@ -349,6 +350,57 @@ test('boolean expression', () => {
   });
 });
 
+test('if expression', () => {
+  const input = 'if (x < y) { x }';
+
+  const l = new Lexer(input);
+  const p = new Parser(l);
+  const program = p.parseProgram();
+  checkParserErrors(p);
+
+  expect(program.statements.length).toBe(1);
+
+  const stmt = program.statements[0] as ExpressionStatement;
+  expect(stmt.constructor).toBe(ExpressionStatement);
+
+  const exp = stmt.expression as IfExpression;
+  expect(exp.constructor).toBe(IfExpression);
+  testInfixExpression(exp.condition, 'x', '<', 'y');
+
+  expect(exp.consequence.statements.length).toBe(1);
+  const consequence = exp.consequence.statements[0] as ExpressionStatement;
+  expect(consequence.constructor).toBe(ExpressionStatement);
+  testIdentifier(consequence.expression, 'x');
+  expect(exp.alternative).toBe(undefined);
+});
+
+test('if else expression', () => {
+  const input = 'if (x < y) { x } else { y }';
+  const l = new Lexer(input);
+  const p = new Parser(l);
+  const program = p.parseProgram();
+  checkParserErrors(p);
+
+  expect(program.statements.length).toBe(1);
+
+  const stmt = program.statements[0] as ExpressionStatement;
+  expect(stmt.constructor).toBe(ExpressionStatement);
+
+  const exp = stmt.expression as IfExpression;
+  expect(exp.constructor).toBe(IfExpression);
+  testInfixExpression(exp.condition, 'x', '<', 'y');
+
+  expect(exp.consequence.statements.length).toBe(1);
+  const consequence = exp.consequence.statements[0] as ExpressionStatement;
+  expect(consequence.constructor).toBe(ExpressionStatement);
+  testIdentifier(consequence.expression, 'x');
+
+  expect(exp.alternative.statements.length).toBe(1);
+  const alternative = exp.alternative.statements[0] as ExpressionStatement;
+  expect(alternative.constructor).toBe(ExpressionStatement);
+  testIdentifier(alternative.expression, 'y');
+});
+
 const testLetStatement = (s: Statement, name: string): void => {
   expect(s.tokenLiteral()).toBe('let');
   const letStmt = s as LetStatement;
@@ -358,7 +410,7 @@ const testLetStatement = (s: Statement, name: string): void => {
 };
 
 const testInfixExpression = (
-  exp: Expression,
+  exp: Expression | undefined,
   left: number | string | boolean,
   operator: string,
   right: number | string | boolean

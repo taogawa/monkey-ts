@@ -92,9 +92,33 @@ export class ExpressionStatement implements Statement {
   }
 }
 
+export class BlockStatement implements Statement {
+  public statements: Statement[];
+  constructor(
+    public token: Token // The { token
+  ) {
+    this.statements = [];
+  }
+
+  statementNode(): void {
+    return;
+  }
+
+  tokenLiteral(): string {
+    return this.token.literal;
+  }
+
+  toString(): string {
+    return this.statements.join('');
+  }
+}
+
 // Expressions
 export class Identifier implements Expression {
-  constructor(public token: Token, public value: string) {}
+  constructor(
+    public token: Token, // The TokenTypes.IDENT token
+    public value: string
+  ) {}
 
   expressionNode(): void {
     return;
@@ -144,8 +168,11 @@ export class IntegerLiteral implements Expression {
 export class PrefixExpression implements Expression {
   right?: Expression;
 
-  // The prefix token, e.g. !
-  constructor(public token: Token, public operator: string) {}
+  constructor(
+    public token: Token, // The prefix token, e.g. !
+    public operator: string
+  ) {}
+
   expressionNode(): void {
     return;
   }
@@ -163,10 +190,11 @@ export class InfixExpression implements Expression {
   right?: Expression;
 
   constructor(
-    public token: Token, // The prefix token, e.g. !
+    public token: Token, // The operator token, e.g. +
     public operator: string,
     public left: Expression
   ) {}
+
   expressionNode(): void {
     return;
   }
@@ -177,5 +205,31 @@ export class InfixExpression implements Expression {
 
   toString(): string {
     return `(${this.left} ${this.operator} ${this.right})`;
+  }
+}
+
+export class IfExpression implements Expression {
+  public condition?: Expression;
+  public consequence!: BlockStatement;
+  public alternative!: BlockStatement;
+
+  constructor(
+    public token: Token // The 'if' token
+  ) {}
+
+  expressionNode(): void {
+    return;
+  }
+
+  tokenLiteral(): string {
+    return this.token.literal;
+  }
+
+  toString(): string {
+    let out: string = `if ${this.condition} ${this.consequence}`;
+    if (this.alternative != null) {
+      out += ` else ${this.alternative}`;
+    }
+    return out;
   }
 }

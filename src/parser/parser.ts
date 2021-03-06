@@ -1,4 +1,5 @@
 import {
+  BlockStatement,
   ExpressionStatement,
   LetStatement,
   Statement,
@@ -10,6 +11,7 @@ import {
   IntegerLiteral,
   PrefixExpression,
   InfixExpression,
+  IfExpression,
 } from '../ast/ast';
 import { Lexer } from '../lexer/lexer';
 import { Token, TokenType, TokenTypes } from '../token/token';
@@ -59,6 +61,7 @@ export class Parser {
     this.registerPrefix(TokenTypes.TRUE, this.parseBool);
     this.registerPrefix(TokenTypes.FALSE, this.parseBool);
     this.registerPrefix(TokenTypes.LPAREN, this.parseGroupedExpression);
+    this.registerPrefix(TokenTypes.IF, this.parseIfExpression);
 
     this.infixParseFns = {};
     this.registerInfix(TokenTypes.PLUS, this.parseInfixExpression);
@@ -209,6 +212,57 @@ export class Parser {
     this.nextToken();
     const exp = this.parseExpression(Precedences.LOWEST);
     return this.expectPeek(TokenTypes.RPAREN) ? exp : undefined;
+  }
+
+  private parseIfExpression(): Expression | undefined {
+    const expression = new IfExpression(this.curToken);
+
+    if (!this.expectPeek(TokenTypes.LPAREN)) {
+      return undefined;
+    }
+
+    this.nextToken();
+    expression.condition = this.parseExpression(Precedences.LOWEST);
+
+    if (!this.expectPeek(TokenTypes.RPAREN)) {
+      return undefined;
+    }
+
+    if (!this.expectPeek(TokenTypes.LBRACE)) {
+      return undefined;
+    }
+
+    expression.consequence = this.parseBlockStatement();
+
+    if (this.peekTokenIs(TokenTypes.ELSE)) {
+      this.nextToken();
+
+      if (!this.expectPeek(TokenTypes.LBRACE)) {
+        return undefined;
+      }
+
+      expression.alternative = this.parseBlockStatement();
+    }
+
+    return expression;
+  }
+
+  private parseBlockStatement(): BlockStatement {
+    const block = new BlockStatement(this.curToken);
+
+    this.nextToken();
+
+    while (
+      !this.curTokenIs(TokenTypes.RBRACE) &&
+      !this.curTokenIs(TokenTypes.EOF)
+    ) {
+      const stmt = this.parseStatement();
+      if (stmt != undefined) {
+        block.statements.push(stmt);
+      }
+      this.nextToken();
+    }
+    return block;
   }
 
   private parseIntegerLiteral(): Expression | undefined {
