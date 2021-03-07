@@ -259,3 +259,23 @@ export class FunctionLiteral implements Expression {
     return `${this.tokenLiteral()}(${params.join(', ')})${this.body}`;
   }
 }
+
+export class CallExpression implements Expression {
+  public arguments!: Expression[];
+  constructor(
+    public token: Token, // The '(' token
+    public func: Expression // Identifier or FunctionLiteral
+  ) {}
+
+  expressionNode(): void {
+    return;
+  }
+
+  tokenLiteral(): string {
+    return this.token.literal;
+  }
+
+  toString(): string {
+    return `${this.func}(${this.arguments.join(', ')})`;
+  }
+}

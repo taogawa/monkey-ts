@@ -1,5 +1,6 @@
 import {
   BlockStatement,
+  CallExpression,
   ExpressionStatement,
   FunctionLiteral,
   LetStatement,
@@ -63,7 +64,7 @@ export class Parser {
     this.registerPrefix(TokenTypes.FALSE, this.parseBool);
     this.registerPrefix(TokenTypes.LPAREN, this.parseGroupedExpression);
     this.registerPrefix(TokenTypes.IF, this.parseIfExpression);
-    this.registerPrefix(TokenTypes.FUNCTION, this.parseFunctionLiteral)
+    this.registerPrefix(TokenTypes.FUNCTION, this.parseFunctionLiteral);
 
     this.infixParseFns = {};
     this.registerInfix(TokenTypes.PLUS, this.parseInfixExpression);
@@ -74,6 +75,7 @@ export class Parser {
     this.registerInfix(TokenTypes.NOT_EQ, this.parseInfixExpression);
     this.registerInfix(TokenTypes.LT, this.parseInfixExpression);
     this.registerInfix(TokenTypes.GT, this.parseInfixExpression);
+    this.registerInfix(TokenTypes.LPAREN, this.parseCallExpression);
 
     this.nextToken();
     this.nextToken();
@@ -309,6 +311,42 @@ export class Parser {
     }
 
     return identifiers;
+  }
+
+  private parseCallExpression(func: Expression): Expression {
+    const exp = new CallExpression(this.curToken, func);
+    exp.arguments = this.parseCallArguments();
+    return exp;
+  }
+
+  private parseCallArguments(): Expression[] {
+    const args: Expression[] = [];
+
+    if (this.peekTokenIs(TokenTypes.RPAREN)) {
+      this.nextToken();
+      return args;
+    }
+
+    this.nextToken();
+    const firstArgExp = this.parseExpression(Precedences.LOWEST);
+    if (firstArgExp != null) {
+      args.push(firstArgExp);
+    }
+
+    while (this.peekTokenIs(TokenTypes.COMMA)) {
+      this.nextToken();
+      this.nextToken();
+      const argExp = this.parseExpression(Precedences.LOWEST);
+      if (argExp != null) {
+        args.push(argExp);
+      }
+    }
+
+    if (!this.expectPeek(TokenTypes.RPAREN)) {
+      return [];
+    }
+
+    return args;
   }
 
   private parseIntegerLiteral(): Expression | undefined {
