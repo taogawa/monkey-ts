@@ -38,7 +38,7 @@ export class Program implements Node {
 // Statements
 export class LetStatement implements Statement {
   name!: Identifier;
-  value!: Expression;
+  value?: Expression;
   constructor(public token: Token) {}
 
   statementNode(): void {
@@ -57,7 +57,7 @@ export class LetStatement implements Statement {
 }
 
 export class ReturnStatement implements Statement {
-  returnValue!: Expression;
+  returnValue?: Expression;
   constructor(public token: Token) {}
 
   statementNode(): void {

@@ -17,50 +17,57 @@ import { Parser } from '../parser/parser';
 import { Lexer } from '../lexer/lexer';
 
 test('let statement', () => {
-  const input = `
-let x = 5;
-let y = 10;
-let foobar = 838383;
-`;
-
-  const l = new Lexer(input);
-  const p = new Parser(l);
-  const program = p.parseProgram();
-  checkParserErrors(p);
-
-  expect(program).not.toBeNull;
-  expect(program.statements.length).toBe(3);
-
   const tests: Array<{
+    input: string;
     expectedIdentifier: string;
+    expectedValue: string | boolean | number;
   }> = [
-    { expectedIdentifier: 'x' },
-    { expectedIdentifier: 'y' },
-    { expectedIdentifier: 'foobar' },
+    { input: 'let x = 5;', expectedIdentifier: 'x', expectedValue: 5 },
+    { input: 'let y = true;', expectedIdentifier: 'y', expectedValue: true },
+    {
+      input: 'let foobar = y;',
+      expectedIdentifier: 'foobar',
+      expectedValue: 'y',
+    },
   ];
 
-  tests.forEach((tt, i) => {
-    const stmt = program.statements[i];
+  tests.forEach((tt) => {
+    const l = new Lexer(tt.input);
+    const p = new Parser(l);
+    const program = p.parseProgram();
+    checkParserErrors(p);
+
+    expect(program).not.toBeNull;
+    expect(program.statements.length).toBe(1);
+    const stmt = program.statements[0];
     testLetStatement(stmt, tt.expectedIdentifier);
+
+    const letStmt = stmt as LetStatement;
+    const val = letStmt.value;
+    testLiteralExpression(val, tt.expectedValue);
   });
 });
 
 test('return statement', () => {
-  const input = `
-return 5;
-return 10;
-return 993322;
-`;
+  const tests: Array<{
+    input: string;
+    expectedValue: string | boolean | number;
+  }> = [
+    { input: 'return 5', expectedValue: 5 },
+    { input: 'return true', expectedValue: true },
+    { input: 'return foobar', expectedValue: 'foobar' },
+  ];
+  tests.forEach((tt) => {
+    const l = new Lexer(tt.input);
+    const p = new Parser(l);
+    const program = p.parseProgram();
+    checkParserErrors(p);
 
-  const l = new Lexer(input);
-  const p = new Parser(l);
-  const program = p.parseProgram();
-  checkParserErrors(p);
-
-  expect(program.statements.length).toBe(3);
-  program.statements.forEach((stmt) => {
-    const returnStatement = stmt as ReturnStatement;
-    expect(returnStatement.tokenLiteral()).toBe('return');
+    expect(program.statements.length).toBe(1);
+    const stmt = program.statements[0];
+    const returnStmt = stmt as ReturnStatement;
+    expect(returnStmt.tokenLiteral()).toBe('return');
+    testLiteralExpression(returnStmt.returnValue, tt.expectedValue);
   });
 });
 

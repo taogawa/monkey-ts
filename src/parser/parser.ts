@@ -157,7 +157,9 @@ export class Parser {
     if (!this.expectPeek(TokenTypes.ASSIGN)) {
       return undefined;
     }
-    while (!this.curTokenIs(TokenTypes.SEMICOLON)) {
+    this.nextToken();
+    stmt.value = this.parseExpression(Precedences.LOWEST);
+    while (this.peekTokenIs(TokenTypes.SEMICOLON)) {
       this.nextToken();
     }
     return stmt;
@@ -166,6 +168,7 @@ export class Parser {
   private parseReturnStatement(): ReturnStatement | undefined {
     const stmt = new ReturnStatement(this.curToken);
     this.nextToken();
+    stmt.returnValue = this.parseExpression(Precedences.LOWEST);
     if (!this.curTokenIs(TokenTypes.SEMICOLON)) {
       this.nextToken();
     }
