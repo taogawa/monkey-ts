@@ -1,11 +1,15 @@
 import {
+  Bool,
   Node,
   Statement,
   Program,
   ExpressionStatement,
   IntegerLiteral,
 } from '../ast/ast';
-import { BaseObject, IntegerObject } from '../object/object';
+import { BaseObject, IntegerObject, BooleanObject } from '../object/object';
+
+const TRUE = new BooleanObject(true);
+const FALSE = new BooleanObject(false);
 
 export const evaluate = (node: Node): BaseObject | undefined => {
   switch (node.constructor) {
@@ -21,13 +25,15 @@ export const evaluate = (node: Node): BaseObject | undefined => {
       const il = node as IntegerLiteral;
       return new IntegerObject(il.value);
     }
+    case Bool: {
+      const bool = node as Bool;
+      return nativeBoolToBooleanObject(bool.value);
+    }
   }
   return undefined;
 };
 
-const evaluateStatements = (
-  stmts: Statement[]
-): BaseObject | undefined => {
+const evaluateStatements = (stmts: Statement[]): BaseObject | undefined => {
   let result: BaseObject | undefined;
   stmts.forEach((statement) => {
     const evaluated = evaluate(statement);
@@ -36,4 +42,11 @@ const evaluateStatements = (
     }
   });
   return result;
+};
+
+const nativeBoolToBooleanObject = (input: boolean): BooleanObject => {
+  if (input) {
+    return TRUE;
+  }
+  return FALSE;
 };

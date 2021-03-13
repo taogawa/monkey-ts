@@ -226,7 +226,7 @@ export class IfExpression implements Expression {
   }
 
   toString(): string {
-    let out: string = `if ${this.condition} ${this.consequence}`;
+    let out = `if ${this.condition} ${this.consequence}`;
     if (this.alternative != null) {
       out += ` else ${this.alternative}`;
     }
