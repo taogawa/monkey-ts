@@ -3,10 +3,16 @@ import {
   Node,
   Statement,
   Program,
+  PrefixExpression,
   ExpressionStatement,
   IntegerLiteral,
 } from '../ast/ast';
-import { BaseObject, IntegerObject, BooleanObject, NullObject } from '../object/object';
+import {
+  BaseObject,
+  IntegerObject,
+  BooleanObject,
+  NullObject,
+} from '../object/object';
 
 const NULL = new NullObject();
 const TRUE = new BooleanObject(true);
@@ -30,6 +36,17 @@ export const evaluate = (node: Node): BaseObject | undefined => {
       const bool = node as Bool;
       return nativeBoolToBooleanObject(bool.value);
     }
+    case PrefixExpression: {
+      const exp = node as PrefixExpression;
+      if (exp.right == null) {
+        return undefined;
+      }
+      const right = evaluate(exp.right);
+      if (right == null) {
+        return undefined;
+      }
+      return evaluatePrefixExpression(exp.operator, right);
+    }
   }
   return undefined;
 };
@@ -50,4 +67,35 @@ const nativeBoolToBooleanObject = (input: boolean): BooleanObject => {
     return TRUE;
   }
   return FALSE;
+};
+
+const evaluatePrefixExpression = (
+  operator: string,
+  right: BaseObject
+): BaseObject => {
+  switch (operator) {
+    case '!': {
+      return evaluateBangOperatorExpression(right);
+    }
+    default: {
+      return NULL;
+    }
+  }
+};
+
+const evaluateBangOperatorExpression = (right: BaseObject): BaseObject => {
+  switch (right) {
+    case TRUE: {
+      return FALSE;
+    }
+    case FALSE: {
+      return TRUE;
+    }
+    case NULL: {
+      return TRUE;
+    }
+    default: {
+      return FALSE;
+    }
+  }
 };

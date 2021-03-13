@@ -202,7 +202,7 @@ export class Parser {
       }
 
       this.nextToken();
-      leftExp = infix.call(this, leftExp!); // eslint-disable-line
+      leftExp = infix.call(this, leftExp!); // eslint-disable-line @typescript-eslint/no-non-null-assertion 
     }
     return leftExp;
   }

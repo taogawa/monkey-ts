@@ -16,7 +16,7 @@ test('eval integer expression', () => {
     const evaluated = testEvaluate(tt.input);
     expect(evaluated).not.toBe(undefined);
     if (evaluated != null) {
-      testIntegerObject(evaluated, tt.expected);
+      testIntegerObject(evaluated, tt.expected); // eslint-disable-line @typescript-eslint/no-non-null-assertion
     }
   });
 });
@@ -33,9 +33,27 @@ test('eval boolean expression', () => {
   tests.forEach((tt) => {
     const evaluated = testEvaluate(tt.input);
     expect(evaluated).not.toBe(undefined);
-    if (evaluated != null) {
-      testBooleanObject(evaluated, tt.expected);
-    }
+    testBooleanObject(evaluated!, tt.expected); // eslint-disable-line @typescript-eslint/no-non-null-assertion
+  });
+});
+
+test('bang operator', () => {
+  const tests: Array<{
+    input: string;
+    expected: boolean;
+  }> = [
+    { input: '!true', expected: false },
+    { input: '!false', expected: true },
+    { input: '!5', expected: false },
+    { input: '!!true', expected: true },
+    { input: '!!false', expected: false },
+    { input: '!!5', expected: true },
+  ];
+
+  tests.forEach((tt) => {
+    const evaluated = testEvaluate(tt.input);
+    expect(evaluated).not.toBe(undefined);
+    testBooleanObject(evaluated!, tt.expected); // eslint-disable-line @typescript-eslint/no-non-null-assertion
   });
 });
 
