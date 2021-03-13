@@ -291,7 +291,7 @@ export class Parser {
   }
 
   private parseFunctionParameters(): Identifier[] {
-    let identifiers: Identifier[] = [];
+    const identifiers: Identifier[] = [];
 
     if (this.peekTokenIs(TokenTypes.RPAREN)) {
       this.nextToken();
