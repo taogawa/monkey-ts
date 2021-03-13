@@ -1,6 +1,7 @@
 import readline from 'readline';
 import { Lexer } from '../lexer/lexer';
 import { Parser } from '../parser/parser';
+import { evaluate } from '../evaluator/evaluator';
 
 export const startRepl = (): void => {
   const prompt = '>>';
@@ -17,7 +18,10 @@ export const startRepl = (): void => {
     if (p.errors.length != 0) {
       printParserErrors(p.errors);
     }
-    console.log(program.toString());
+    const evaluated = evaluate(program);
+    if (evaluated != null) {
+      console.log(evaluated.inspect());
+    }
   });
 };
 
