@@ -6,8 +6,9 @@ import {
   ExpressionStatement,
   IntegerLiteral,
 } from '../ast/ast';
-import { BaseObject, IntegerObject, BooleanObject } from '../object/object';
+import { BaseObject, IntegerObject, BooleanObject, NullObject } from '../object/object';
 
+const NULL = new NullObject();
 const TRUE = new BooleanObject(true);
 const FALSE = new BooleanObject(false);
 
