@@ -10,6 +10,8 @@ test('eval integer expression', () => {
   }> = [
     { input: '5', expected: 5 },
     { input: '10', expected: 10 },
+    { input: '-5', expected: -5 },
+    { input: '-10', expected: -10 },
   ];
 
   tests.forEach((tt) => {

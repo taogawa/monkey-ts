@@ -12,6 +12,7 @@ import {
   IntegerObject,
   BooleanObject,
   NullObject,
+  ObjectTypes,
 } from '../object/object';
 
 const NULL = new NullObject();
@@ -77,6 +78,9 @@ const evaluatePrefixExpression = (
     case '!': {
       return evaluateBangOperatorExpression(right);
     }
+    case '-': {
+      return evaluateMinusPrefixOperatorExpression(right);
+    }
     default: {
       return NULL;
     }
@@ -98,4 +102,15 @@ const evaluateBangOperatorExpression = (right: BaseObject): BaseObject => {
       return FALSE;
     }
   }
+};
+
+const evaluateMinusPrefixOperatorExpression = (
+  right: BaseObject
+): BaseObject => {
+  if (right.type() != ObjectTypes.INTEGER_OBJ) {
+    return NULL;
+  }
+  const intObj = right as IntegerObject;
+  const value = intObj.value;
+  return new IntegerObject(-value);
 };
