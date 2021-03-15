@@ -4,6 +4,7 @@ import {
   Statement,
   Program,
   PrefixExpression,
+  InfixExpression,
   ExpressionStatement,
   IntegerLiteral,
 } from '../ast/ast';
@@ -48,6 +49,17 @@ export const evaluate = (node: Node): BaseObject | undefined => {
       }
       return evaluatePrefixExpression(exp.operator, right);
     }
+    case InfixExpression: {
+      const exp = node as InfixExpression;
+      if (exp.right == null) {
+        return undefined;
+      }
+      const left = evaluate(exp.left);
+      const right = evaluate(exp.right);
+      return left != null && right != null
+        ? evaluateInfixExpression(exp.operator, left, right)
+        : undefined;
+    }
   }
   return undefined;
 };
@@ -87,6 +99,21 @@ const evaluatePrefixExpression = (
   }
 };
 
+const evaluateInfixExpression = (
+  operator: string,
+  left: BaseObject,
+  right: BaseObject
+): BaseObject => {
+  if (
+    left.type() == ObjectTypes.INTEGER_OBJ &&
+    right.type() == ObjectTypes.INTEGER_OBJ
+  ) {
+    return evaluateIntegerInfixExpression(operator, left, right);
+  } else {
+    return NULL;
+  }
+};
+
 const evaluateBangOperatorExpression = (right: BaseObject): BaseObject => {
   switch (right) {
     case TRUE: {
@@ -113,4 +140,31 @@ const evaluateMinusPrefixOperatorExpression = (
   const intObj = right as IntegerObject;
   const value = intObj.value;
   return new IntegerObject(-value);
+};
+
+const evaluateIntegerInfixExpression = (
+  operator: string,
+  left: BaseObject,
+  right: BaseObject
+): BaseObject => {
+  const leftVal = (left as IntegerObject).value;
+  const rightVal = (right as IntegerObject).value;
+
+  switch (operator) {
+    case '+': {
+      return new IntegerObject(leftVal + rightVal);
+    }
+    case '-': {
+      return new IntegerObject(leftVal - rightVal);
+    }
+    case '*': {
+      return new IntegerObject(leftVal * rightVal);
+    }
+    case '/': {
+      return new IntegerObject(leftVal / rightVal);
+    }
+    default: {
+      return NULL;
+    }
+  }
 };
