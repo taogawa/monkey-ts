@@ -202,7 +202,7 @@ export class Parser {
       }
 
       this.nextToken();
-      leftExp = infix.call(this, leftExp!); // eslint-disable-line @typescript-eslint/no-non-null-assertion 
+      leftExp = infix.call(this, leftExp!); // eslint-disable-line @typescript-eslint/no-non-null-assertion
     }
     return leftExp;
   }
@@ -222,14 +222,15 @@ export class Parser {
   }
 
   private parseIfExpression(): Expression | undefined {
-    const expression = new IfExpression(this.curToken);
-
     if (!this.expectPeek(TokenTypes.LPAREN)) {
       return undefined;
     }
-
     this.nextToken();
-    expression.condition = this.parseExpression(Precedences.LOWEST);
+    const condition = this.parseExpression(Precedences.LOWEST);
+    if (condition == null) {
+      return undefined;
+    }
+    const expression = new IfExpression(this.curToken, condition);
 
     if (!this.expectPeek(TokenTypes.RPAREN)) {
       return undefined;

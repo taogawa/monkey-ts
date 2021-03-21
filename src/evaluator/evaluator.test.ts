@@ -1,6 +1,11 @@
 import { Parser } from '../parser/parser';
 import { Lexer } from '../lexer/lexer';
-import { BaseObject, IntegerObject, BooleanObject } from '../object/object';
+import {
+  BaseObject,
+  IntegerObject,
+  BooleanObject,
+  NullObject,
+} from '../object/object';
 import { evaluate } from '../evaluator/evaluator';
 
 test('eval integer expression', () => {
@@ -87,6 +92,31 @@ test('bang operator', () => {
   });
 });
 
+test('if else expressions', () => {
+  const tests: Array<{
+    input: string;
+    expected: number | undefined;
+  }> = [
+    { input: 'if (true) { 10 }', expected: 10 },
+    { input: 'if (false) { 10 }', expected: undefined },
+    { input: 'if (1) { 10 }', expected: 10 },
+    { input: 'if (1 < 2) { 10 }', expected: 10 },
+    { input: 'if (1 > 2) { 10 }', expected: undefined },
+    { input: 'if (1 > 2) { 10 } else { 20 }', expected: 20 },
+    { input: 'if (1 < 2) { 10 } else { 20 }', expected: 10 },
+  ];
+
+  tests.forEach((tt) => {
+    const evaluated = testEvaluate(tt.input);
+    const integer = tt.expected as number;
+    if (integer != null) {
+      testIntegerObject(evaluated!, integer); // eslint-disable-line @typescript-eslint/no-non-null-assertion
+    } else {
+      testNullObject(evaluated!); // eslint-disable-line @typescript-eslint/no-non-null-assertion
+    }
+  });
+});
+
 const testEvaluate = (input: string): BaseObject | undefined => {
   const l = new Lexer(input);
   const p = new Parser(l);
@@ -101,8 +131,12 @@ const testIntegerObject = (obj: BaseObject, expected: number): void => {
   expect(result.value).toBe(expected);
 };
 
-const testBooleanObject = (obj: BaseObject, expected: boolean) => {
+const testBooleanObject = (obj: BaseObject, expected: boolean): void => {
   const result = obj as BooleanObject;
   expect(result.constructor).toBe(BooleanObject);
   expect(result.value).toBe(expected);
+};
+
+const testNullObject = (obj: BaseObject): void => {
+  expect(obj.constructor).toBe(NullObject);
 };

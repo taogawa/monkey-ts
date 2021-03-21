@@ -209,12 +209,12 @@ export class InfixExpression implements Expression {
 }
 
 export class IfExpression implements Expression {
-  public condition?: Expression;
   public consequence!: BlockStatement;
   public alternative!: BlockStatement;
 
   constructor(
-    public token: Token // The 'if' token
+    public token: Token, // The 'if' token
+    public condition: Expression
   ) {}
 
   expressionNode(): void {

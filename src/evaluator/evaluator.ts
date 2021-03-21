@@ -3,10 +3,12 @@ import {
   Node,
   Statement,
   Program,
+  BlockStatement,
   PrefixExpression,
   InfixExpression,
   ExpressionStatement,
   IntegerLiteral,
+  IfExpression,
 } from '../ast/ast';
 import {
   BaseObject,
@@ -25,6 +27,10 @@ export const evaluate = (node: Node): BaseObject | undefined => {
     case Program: {
       const program = node as Program;
       return evaluateStatements(program.statements);
+    }
+    case BlockStatement: {
+      const stmt = node as BlockStatement;
+      return stmt != null ? evaluateStatements(stmt.statements) : undefined;
     }
     case ExpressionStatement: {
       const stmt = node as ExpressionStatement;
@@ -59,6 +65,10 @@ export const evaluate = (node: Node): BaseObject | undefined => {
       return left != null && right != null
         ? evaluateInfixExpression(exp.operator, left, right)
         : undefined;
+    }
+    case IfExpression: {
+      const ie = node as IfExpression;
+      return ie != null ? evaluateIfExpression(ie) : undefined;
     }
   }
   return undefined;
@@ -181,6 +191,36 @@ const evaluateIntegerInfixExpression = (
     }
     default: {
       return NULL;
+    }
+  }
+};
+
+const evaluateIfExpression = (ie: IfExpression): BaseObject | undefined => {
+  const condition = evaluate(ie.condition);
+  if (condition == null) {
+    return undefined;
+  } else if (isTruthy(condition)) {
+    return evaluate(ie.consequence);
+  } else if (ie.alternative != null) {
+    return evaluate(ie.alternative);
+  } else {
+    return NULL;
+  }
+};
+
+const isTruthy = (obj: BaseObject): boolean => {
+  switch (obj) {
+    case NULL: {
+      return false;
+    }
+    case TRUE: {
+      return true;
+    }
+    case FALSE: {
+      return false;
+    }
+    default: {
+      return true;
     }
   }
 };
