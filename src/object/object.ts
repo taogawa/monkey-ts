@@ -4,6 +4,7 @@ export const ObjectTypes = {
   NULL_OBJ: 'NULL',
   INTEGER_OBJ: 'INTEGER',
   BOOLEAN_OBJ: 'BOOLEAN',
+  RETURN_VALUE_OBJ: 'RETURN_VALUE',
 };
 
 export type BaseObject = {
@@ -39,5 +40,16 @@ export class NullObject implements BaseObject {
   }
   inspect(): string {
     return 'null';
+  }
+}
+
+export class ReturnValue implements BaseObject {
+  constructor(public value: BaseObject) {}
+
+  type(): ObjectType {
+    return ObjectTypes.RETURN_VALUE_OBJ;
+  }
+  inspect(): string {
+    return this.value.inspect();
   }
 }

@@ -166,9 +166,13 @@ export class Parser {
   }
 
   private parseReturnStatement(): ReturnStatement | undefined {
-    const stmt = new ReturnStatement(this.curToken);
+    const curToken = this.curToken;
     this.nextToken();
-    stmt.returnValue = this.parseExpression(Precedences.LOWEST);
+    const returnValue = this.parseExpression(Precedences.LOWEST);
+    if (returnValue == null) {
+      return undefined;
+    }
+    const stmt = new ReturnStatement(curToken, returnValue);
     if (!this.curTokenIs(TokenTypes.SEMICOLON)) {
       this.nextToken();
     }

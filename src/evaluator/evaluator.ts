@@ -9,6 +9,7 @@ import {
   ExpressionStatement,
   IntegerLiteral,
   IfExpression,
+  ReturnStatement,
 } from '../ast/ast';
 import {
   BaseObject,
@@ -16,6 +17,7 @@ import {
   BooleanObject,
   NullObject,
   ObjectTypes,
+  ReturnValue,
 } from '../object/object';
 
 const NULL = new NullObject();
@@ -35,6 +37,11 @@ export const evaluate = (node: Node): BaseObject | undefined => {
     case ExpressionStatement: {
       const stmt = node as ExpressionStatement;
       return stmt.expression != null ? evaluate(stmt.expression) : undefined;
+    }
+    case ReturnStatement: {
+      const rs = node as ReturnStatement;
+      const val = evaluate(rs.returnValue);
+      return val != null ? new ReturnValue(val) : undefined;
     }
     case IntegerLiteral: {
       const il = node as IntegerLiteral;
@@ -76,12 +83,15 @@ export const evaluate = (node: Node): BaseObject | undefined => {
 
 const evaluateStatements = (stmts: Statement[]): BaseObject | undefined => {
   let result: BaseObject | undefined;
-  stmts.forEach((statement) => {
+  for (const statement of stmts) {
     const evaluated = evaluate(statement);
     if (evaluated != null) {
       result = evaluated;
+      if (result.constructor === ReturnValue) {
+        return (result as ReturnValue).value;
+      }
     }
-  });
+  }
   return result;
 };
 

@@ -57,8 +57,7 @@ export class LetStatement implements Statement {
 }
 
 export class ReturnStatement implements Statement {
-  returnValue?: Expression;
-  constructor(public token: Token) {}
+  constructor(public token: Token, public returnValue: Expression) {}
 
   statementNode(): void {
     return;

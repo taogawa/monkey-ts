@@ -117,12 +117,28 @@ test('if else expressions', () => {
   });
 });
 
+test('return statements', () => {
+  const tests: Array<{
+    input: string;
+    expected: number | undefined;
+  }> = [
+    { input: 'return 10;', expected: 10 },
+    { input: 'return 10; 9;', expected: 10 },
+    { input: 'return 2 * 5; 9;', expected: 10 },
+    { input: '9; return 2 * 5; 9;', expected: 10 },
+  ];
+  tests.forEach((tt) => {
+    const evaluated = testEvaluate(tt.input);
+    testIntegerObject(evaluated!, tt.expected!); // eslint-disable-line @typescript-eslint/no-non-null-assertion
+  });
+});
+
 const testEvaluate = (input: string): BaseObject | undefined => {
   const l = new Lexer(input);
   const p = new Parser(l);
   const program = p.parseProgram();
 
-  return evaluate(program.statements[0]);
+  return evaluate(program);
 };
 
 const testIntegerObject = (obj: BaseObject, expected: number): void => {
