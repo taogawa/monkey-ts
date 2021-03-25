@@ -1,7 +1,6 @@
 import {
   Bool,
   Node,
-  Statement,
   Program,
   BlockStatement,
   PrefixExpression,
@@ -28,11 +27,11 @@ export const evaluate = (node: Node): BaseObject | undefined => {
   switch (node.constructor) {
     case Program: {
       const program = node as Program;
-      return evaluateStatements(program.statements);
+      return evaluateProgram(program);
     }
     case BlockStatement: {
       const stmt = node as BlockStatement;
-      return stmt != null ? evaluateStatements(stmt.statements) : undefined;
+      return stmt != null ? evaluateBlockStatement(stmt) : undefined;
     }
     case ExpressionStatement: {
       const stmt = node as ExpressionStatement;
@@ -81,15 +80,28 @@ export const evaluate = (node: Node): BaseObject | undefined => {
   return undefined;
 };
 
-const evaluateStatements = (stmts: Statement[]): BaseObject | undefined => {
+const evaluateProgram = (program: Program): BaseObject | undefined => {
   let result: BaseObject | undefined;
-  for (const statement of stmts) {
+  for (const statement of program.statements) {
     const evaluated = evaluate(statement);
     if (evaluated != null) {
       result = evaluated;
       if (result.constructor === ReturnValue) {
         return (result as ReturnValue).value;
       }
+    }
+  }
+  return result;
+};
+
+const evaluateBlockStatement = (
+  block: BlockStatement
+): BaseObject | undefined => {
+  let result: BaseObject | undefined;
+  for (const statement of block.statements) {
+    result = evaluate(statement);
+    if (result != null && result.type() == ObjectTypes.RETURN_VALUE_OBJ) {
+      return result;
     }
   }
   return result;
