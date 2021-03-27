@@ -17,6 +17,7 @@ import {
   NullObject,
   ObjectTypes,
   ReturnValue,
+  ErrorObject,
 } from '../object/object';
 
 const NULL = new NullObject();
@@ -31,7 +32,7 @@ export const evaluate = (node: Node): BaseObject | undefined => {
     }
     case BlockStatement: {
       const stmt = node as BlockStatement;
-      return stmt != null ? evaluateBlockStatement(stmt) : undefined;
+      return evaluateBlockStatement(stmt);
     }
     case ExpressionStatement: {
       const stmt = node as ExpressionStatement;
@@ -74,7 +75,7 @@ export const evaluate = (node: Node): BaseObject | undefined => {
     }
     case IfExpression: {
       const ie = node as IfExpression;
-      return ie != null ? evaluateIfExpression(ie) : undefined;
+      return evaluateIfExpression(ie);
     }
   }
   return undefined;
@@ -86,8 +87,13 @@ const evaluateProgram = (program: Program): BaseObject | undefined => {
     const evaluated = evaluate(statement);
     if (evaluated != null) {
       result = evaluated;
-      if (result.constructor === ReturnValue) {
-        return (result as ReturnValue).value;
+      switch (result.constructor) {
+        case ReturnValue: {
+          return (result as ReturnValue).value;
+        }
+        case ErrorObject: {
+          return result;
+        }
       }
     }
   }
@@ -100,8 +106,11 @@ const evaluateBlockStatement = (
   let result: BaseObject | undefined;
   for (const statement of block.statements) {
     result = evaluate(statement);
-    if (result != null && result.type() == ObjectTypes.RETURN_VALUE_OBJ) {
-      return result;
+    if (result != null) {
+      const rt = result.type();
+      if (rt === ObjectTypes.RETURN_VALUE_OBJ || rt === ObjectTypes.ERROR_OBJ) {
+        return result;
+      }
     }
   }
   return result;
@@ -126,7 +135,7 @@ const evaluatePrefixExpression = (
       return evaluateMinusPrefixOperatorExpression(right);
     }
     default: {
-      return NULL;
+      return new ErrorObject(`unknown operator: ${operator} ${right.type()}`);
     }
   }
 };
@@ -145,8 +154,14 @@ const evaluateInfixExpression = (
     return nativeBoolToBooleanObject(left === right);
   } else if (operator === '!=') {
     return nativeBoolToBooleanObject(left !== right);
+  } else if (left.type() !== right.type()) {
+    return new ErrorObject(
+      `type mismatch: ${left.type()} ${operator} ${right.type()}`
+    );
   } else {
-    return NULL;
+    return new ErrorObject(
+      `unknown operator: ${left.type()} ${operator} ${right.type()}`
+    );
   }
 };
 
@@ -171,7 +186,7 @@ const evaluateMinusPrefixOperatorExpression = (
   right: BaseObject
 ): BaseObject => {
   if (right.type() != ObjectTypes.INTEGER_OBJ) {
-    return NULL;
+    return new ErrorObject(`unknown operator: -${right.type()}`);
   }
   const intObj = right as IntegerObject;
   const value = intObj.value;
@@ -212,7 +227,9 @@ const evaluateIntegerInfixExpression = (
       return nativeBoolToBooleanObject(leftVal != rightVal);
     }
     default: {
-      return NULL;
+      return new ErrorObject(
+        `unknown operator: ${left.type()} ${operator} ${right.type()}`
+      );
     }
   }
 };

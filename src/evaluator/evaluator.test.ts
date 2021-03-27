@@ -5,6 +5,7 @@ import {
   IntegerObject,
   BooleanObject,
   NullObject,
+  ErrorObject,
 } from '../object/object';
 import { evaluate } from '../evaluator/evaluator';
 
@@ -141,6 +142,56 @@ if (10 > 1) {
   tests.forEach((tt) => {
     const evaluated = testEvaluate(tt.input);
     testIntegerObject(evaluated!, tt.expected!); // eslint-disable-line @typescript-eslint/no-non-null-assertion
+  });
+});
+
+test('test error handling', () => {
+  const tests: Array<{
+    input: string;
+    expectedMessage: string;
+  }> = [
+    {
+      input: '5 + true;',
+      expectedMessage: 'type mismatch: INTEGER + BOOLEAN',
+    },
+    {
+      input: '5 + true; 5;',
+      expectedMessage: 'type mismatch: INTEGER + BOOLEAN',
+    },
+    {
+      input: '-true',
+      expectedMessage: 'unknown operator: -BOOLEAN',
+    },
+    {
+      input: 'true + false;',
+      expectedMessage: 'unknown operator: BOOLEAN + BOOLEAN',
+    },
+    {
+      input: '5; true + false; 5',
+      expectedMessage: 'unknown operator: BOOLEAN + BOOLEAN',
+    },
+    {
+      input: 'if (10 > 1) { true + false; }',
+      expectedMessage: 'unknown operator: BOOLEAN + BOOLEAN',
+    },
+    {
+      input: `
+if (10 > 1) {
+  if (10 > 1) {
+    return true + false;
+  }
+  return 1;
+}
+`,
+      expectedMessage: 'unknown operator: BOOLEAN + BOOLEAN',
+    },
+  ];
+  tests.forEach((tt) => {
+    const evaluated = testEvaluate(tt.input);
+    const errObj = evaluated as ErrorObject;
+
+    expect(errObj.constructor).toBe(ErrorObject);
+    expect(errObj.message).toBe(tt.expectedMessage);
   });
 });
 

@@ -2,6 +2,7 @@ export type ObjectType = typeof ObjectTypes[keyof typeof ObjectTypes];
 
 export const ObjectTypes = {
   NULL_OBJ: 'NULL',
+  ERROR_OBJ: 'ERROR',
   INTEGER_OBJ: 'INTEGER',
   BOOLEAN_OBJ: 'BOOLEAN',
   RETURN_VALUE_OBJ: 'RETURN_VALUE',
@@ -51,5 +52,16 @@ export class ReturnValue implements BaseObject {
   }
   inspect(): string {
     return this.value.inspect();
+  }
+}
+
+export class ErrorObject implements BaseObject {
+  constructor(public message: string) {}
+
+  type(): ObjectType {
+    return ObjectTypes.ERROR_OBJ;
+  }
+  inspect(): string {
+    return `ERROR: ${this.message}`;
   }
 }
