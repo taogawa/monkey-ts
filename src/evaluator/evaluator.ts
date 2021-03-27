@@ -41,6 +41,9 @@ export const evaluate = (node: Node): BaseObject | undefined => {
     case ReturnStatement: {
       const rs = node as ReturnStatement;
       const val = evaluate(rs.returnValue);
+      if (isError(val)) {
+        return val
+      }
       return val != null ? new ReturnValue(val) : undefined;
     }
     case IntegerLiteral: {
@@ -59,6 +62,8 @@ export const evaluate = (node: Node): BaseObject | undefined => {
       const right = evaluate(exp.right);
       if (right == null) {
         return undefined;
+      } else if (isError(right)) {
+        return right;
       }
       return evaluatePrefixExpression(exp.operator, right);
     }
@@ -68,7 +73,13 @@ export const evaluate = (node: Node): BaseObject | undefined => {
         return undefined;
       }
       const left = evaluate(exp.left);
+      if (isError(left)) {
+        return left
+      }
       const right = evaluate(exp.right);
+      if (isError(right)) {
+        return right
+      }
       return left != null && right != null
         ? evaluateInfixExpression(exp.operator, left, right)
         : undefined;
@@ -236,7 +247,9 @@ const evaluateIntegerInfixExpression = (
 
 const evaluateIfExpression = (ie: IfExpression): BaseObject | undefined => {
   const condition = evaluate(ie.condition);
-  if (condition == null) {
+  if (isError(condition)) {
+    return condition;
+  } else if (condition == null) {
     return undefined;
   } else if (isTruthy(condition)) {
     return evaluate(ie.consequence);
@@ -262,4 +275,11 @@ const isTruthy = (obj: BaseObject): boolean => {
       return true;
     }
   }
+};
+
+const isError = (obj: BaseObject | undefined): boolean => {
+  if (obj != null) {
+    return obj.type() === ObjectTypes.ERROR_OBJ;
+  }
+  return false;
 };
