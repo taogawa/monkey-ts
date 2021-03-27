@@ -3,10 +3,10 @@ import { Program, LetStatement, Identifier } from './ast';
 
 test('toString', () => {
   const program = new Program();
-  const letStatement = new LetStatement(new Token(TokenTypes.LET, 'let'));
-  letStatement.name = new Identifier(
-    new Token(TokenTypes.IDENT, 'myVar'),
-    'myVar'
+  const ident = new Identifier(new Token(TokenTypes.IDENT, 'myVar'), 'myVar');
+  const letStatement = new LetStatement(
+    new Token(TokenTypes.LET, 'let'),
+    ident
   );
   letStatement.value = new Identifier(
     new Token(TokenTypes.IDENT, 'anotherVar'),

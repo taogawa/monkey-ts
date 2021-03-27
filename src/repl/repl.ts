@@ -2,9 +2,11 @@ import readline from 'readline';
 import { Lexer } from '../lexer/lexer';
 import { Parser } from '../parser/parser';
 import { evaluate } from '../evaluator/evaluator';
+import { Environment } from '../object/environment';
 
 export const startRepl = (): void => {
   const prompt = '>>';
+  const env = new Environment();
   const rl = readline.createInterface({
     input: process.stdin,
     output: process.stdout,
@@ -18,7 +20,7 @@ export const startRepl = (): void => {
     if (p.errors.length != 0) {
       printParserErrors(p.errors);
     }
-    const evaluated = evaluate(program);
+    const evaluated = evaluate(program, env);
     if (evaluated != null) {
       console.log(evaluated.inspect());
     }

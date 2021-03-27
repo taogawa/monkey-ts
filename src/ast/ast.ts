@@ -37,9 +37,8 @@ export class Program implements Node {
 
 // Statements
 export class LetStatement implements Statement {
-  name!: Identifier;
-  value?: Expression;
-  constructor(public token: Token) {}
+  public value?: Expression;
+  constructor(public token: Token, public name: Identifier) {}
 
   statementNode(): void {
     return;

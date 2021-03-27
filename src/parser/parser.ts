@@ -149,15 +149,16 @@ export class Parser {
   }
 
   private parseLetStatement(): LetStatement | undefined {
-    const stmt = new LetStatement(this.curToken);
+    const curToken = this.curToken;
     if (!this.expectPeek(TokenTypes.IDENT)) {
       return undefined;
     }
-    stmt.name = new Identifier(this.curToken, this.curToken.literal);
+    const ident = new Identifier(this.curToken, this.curToken.literal);
     if (!this.expectPeek(TokenTypes.ASSIGN)) {
       return undefined;
     }
     this.nextToken();
+    const stmt = new LetStatement(curToken, ident);
     stmt.value = this.parseExpression(Precedences.LOWEST);
     while (this.peekTokenIs(TokenTypes.SEMICOLON)) {
       this.nextToken();

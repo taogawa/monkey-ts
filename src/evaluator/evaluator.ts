@@ -9,6 +9,8 @@ import {
   IntegerLiteral,
   IfExpression,
   ReturnStatement,
+  Identifier,
+  LetStatement,
 } from '../ast/ast';
 import {
   BaseObject,
@@ -19,32 +21,51 @@ import {
   ReturnValue,
   ErrorObject,
 } from '../object/object';
+import { Environment } from '../object/environment';
 
 const NULL = new NullObject();
 const TRUE = new BooleanObject(true);
 const FALSE = new BooleanObject(false);
 
-export const evaluate = (node: Node): BaseObject | undefined => {
+export const evaluate = (
+  node: Node,
+  env: Environment
+): BaseObject | undefined => {
   switch (node.constructor) {
     case Program: {
       const program = node as Program;
-      return evaluateProgram(program);
+      return evaluateProgram(program, env);
     }
     case BlockStatement: {
       const stmt = node as BlockStatement;
-      return evaluateBlockStatement(stmt);
+      return evaluateBlockStatement(stmt, env);
     }
     case ExpressionStatement: {
       const stmt = node as ExpressionStatement;
-      return stmt.expression != null ? evaluate(stmt.expression) : undefined;
+      return stmt.expression != null
+        ? evaluate(stmt.expression, env)
+        : undefined;
     }
     case ReturnStatement: {
       const rs = node as ReturnStatement;
-      const val = evaluate(rs.returnValue);
+      const val = evaluate(rs.returnValue, env);
       if (isError(val)) {
-        return val
+        return val;
       }
       return val != null ? new ReturnValue(val) : undefined;
+    }
+    case LetStatement: {
+      const stmt = node as LetStatement;
+      if (stmt.value == undefined) {
+        return undefined;
+      }
+      const val = evaluate(stmt.value, env);
+      if (isError(val)) {
+        return val;
+      } else if (val != null) {
+        env.setStore(stmt.name.value, val);
+      }
+      break;
     }
     case IntegerLiteral: {
       const il = node as IntegerLiteral;
@@ -59,7 +80,7 @@ export const evaluate = (node: Node): BaseObject | undefined => {
       if (exp.right == null) {
         return undefined;
       }
-      const right = evaluate(exp.right);
+      const right = evaluate(exp.right, env);
       if (right == null) {
         return undefined;
       } else if (isError(right)) {
@@ -72,13 +93,13 @@ export const evaluate = (node: Node): BaseObject | undefined => {
       if (exp.right == null) {
         return undefined;
       }
-      const left = evaluate(exp.left);
+      const left = evaluate(exp.left, env);
       if (isError(left)) {
-        return left
+        return left;
       }
-      const right = evaluate(exp.right);
+      const right = evaluate(exp.right, env);
       if (isError(right)) {
-        return right
+        return right;
       }
       return left != null && right != null
         ? evaluateInfixExpression(exp.operator, left, right)
@@ -86,16 +107,23 @@ export const evaluate = (node: Node): BaseObject | undefined => {
     }
     case IfExpression: {
       const ie = node as IfExpression;
-      return evaluateIfExpression(ie);
+      return evaluateIfExpression(ie, env);
+    }
+    case Identifier: {
+      const ident = node as Identifier;
+      return evaluateIdentifier(ident, env);
     }
   }
   return undefined;
 };
 
-const evaluateProgram = (program: Program): BaseObject | undefined => {
+const evaluateProgram = (
+  program: Program,
+  env: Environment
+): BaseObject | undefined => {
   let result: BaseObject | undefined;
   for (const statement of program.statements) {
-    const evaluated = evaluate(statement);
+    const evaluated = evaluate(statement, env);
     if (evaluated != null) {
       result = evaluated;
       switch (result.constructor) {
@@ -112,11 +140,12 @@ const evaluateProgram = (program: Program): BaseObject | undefined => {
 };
 
 const evaluateBlockStatement = (
-  block: BlockStatement
+  block: BlockStatement,
+  env: Environment
 ): BaseObject | undefined => {
   let result: BaseObject | undefined;
   for (const statement of block.statements) {
-    result = evaluate(statement);
+    result = evaluate(statement, env);
     if (result != null) {
       const rt = result.type();
       if (rt === ObjectTypes.RETURN_VALUE_OBJ || rt === ObjectTypes.ERROR_OBJ) {
@@ -245,16 +274,19 @@ const evaluateIntegerInfixExpression = (
   }
 };
 
-const evaluateIfExpression = (ie: IfExpression): BaseObject | undefined => {
-  const condition = evaluate(ie.condition);
+const evaluateIfExpression = (
+  ie: IfExpression,
+  env: Environment
+): BaseObject | undefined => {
+  const condition = evaluate(ie.condition, env);
   if (isError(condition)) {
     return condition;
   } else if (condition == null) {
     return undefined;
   } else if (isTruthy(condition)) {
-    return evaluate(ie.consequence);
+    return evaluate(ie.consequence, env);
   } else if (ie.alternative != null) {
-    return evaluate(ie.alternative);
+    return evaluate(ie.alternative, env);
   } else {
     return NULL;
   }
@@ -275,6 +307,13 @@ const isTruthy = (obj: BaseObject): boolean => {
       return true;
     }
   }
+};
+
+const evaluateIdentifier = (node: Identifier, env: Environment): BaseObject => {
+  const val = env.getStore(node.value);
+  return val != null
+    ? val
+    : new ErrorObject(`identifier not found: ${node.value}`);
 };
 
 const isError = (obj: BaseObject | undefined): boolean => {

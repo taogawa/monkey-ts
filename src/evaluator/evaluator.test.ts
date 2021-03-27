@@ -8,6 +8,7 @@ import {
   ErrorObject,
 } from '../object/object';
 import { evaluate } from '../evaluator/evaluator';
+import { Environment } from '../object/environment';
 
 test('eval integer expression', () => {
   const tests: Array<{
@@ -193,7 +194,6 @@ if (10 > 1) {
   tests.forEach((tt) => {
     const evaluated = testEvaluate(tt.input);
     const errObj = evaluated as ErrorObject;
-
     expect(errObj.constructor).toBe(ErrorObject);
     expect(errObj.message).toBe(tt.expectedMessage);
   });
@@ -203,8 +203,9 @@ const testEvaluate = (input: string): BaseObject | undefined => {
   const l = new Lexer(input);
   const p = new Parser(l);
   const program = p.parseProgram();
+  const env = new Environment();
 
-  return evaluate(program);
+  return evaluate(program, env);
 };
 
 const testIntegerObject = (obj: BaseObject, expected: number): void => {
