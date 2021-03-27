@@ -109,6 +109,10 @@ const evaluateInfixExpression = (
     right.type() == ObjectTypes.INTEGER_OBJ
   ) {
     return evaluateIntegerInfixExpression(operator, left, right);
+  } else if (operator === '==') {
+    return nativeBoolToBooleanObject(left === right);
+  } else if (operator === '!=') {
+    return nativeBoolToBooleanObject(left !== right);
   } else {
     return NULL;
   }
