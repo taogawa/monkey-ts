@@ -185,6 +185,10 @@ if (10 > 1) {
 `,
       expectedMessage: 'unknown operator: BOOLEAN + BOOLEAN',
     },
+    {
+      input: 'foobar',
+      expectedMessage: 'identifier not found: foobar',
+    },
   ];
   tests.forEach((tt) => {
     const evaluated = testEvaluate(tt.input);
