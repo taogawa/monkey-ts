@@ -230,8 +230,20 @@ test('function application', () => {
 
   tests.forEach((tt) => {
     const evaluated = testEvaluate(tt.input);
-    testIntegerObject(evaluated!, tt.expected);
+    testIntegerObject(evaluated!, tt.expected); // eslint-disable-line @typescript-eslint/no-non-null-assertion
   });
+});
+
+test('closures', () => {
+  const input = `
+ let newAdder = fn(x) {
+   fn(y) { x + y }
+ };
+
+ let addTwo = newAdder(2);
+ addTwo(2);
+ `;
+  testIntegerObject(testEvaluate(input)!, 4); // eslint-disable-line @typescript-eslint/no-non-null-assertion
 });
 
 const testEvaluate = (input: string): BaseObject | undefined => {

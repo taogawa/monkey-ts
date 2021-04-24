@@ -287,7 +287,7 @@ const evaluateExpressions = (
   exps: Expression[],
   env: Environment
 ): BaseObject[] => {
-  let result: BaseObject[] = [];
+  const result: BaseObject[] = [];
   for (const e of exps) {
     const evaluated = evaluate(e, env);
     if (isError(evaluated)) {
