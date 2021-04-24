@@ -20,6 +20,8 @@ if (5 < 10) {
 }
 10 == 10;
 10 != 9;
+"foobar"
+"foo bar"
 `;
 
   const tests: Array<{
@@ -99,6 +101,8 @@ if (5 < 10) {
     { expectedType: TokenTypes.NOT_EQ, expectedLiteral: '!=' },
     { expectedType: TokenTypes.INT, expectedLiteral: '9' },
     { expectedType: TokenTypes.SEMICOLON, expectedLiteral: ';' },
+    { expectedType: TokenTypes.STRING, expectedLiteral: 'foobar' },
+    { expectedType: TokenTypes.STRING, expectedLiteral: 'foo bar' },
     { expectedType: TokenTypes.EOF, expectedLiteral: '' },
   ];
   const l = new Lexer(input);
