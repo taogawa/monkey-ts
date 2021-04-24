@@ -3,6 +3,7 @@ import {
   Node,
   Program,
   BlockStatement,
+  Expression,
   PrefixExpression,
   InfixExpression,
   ExpressionStatement,
@@ -11,6 +12,8 @@ import {
   ReturnStatement,
   Identifier,
   LetStatement,
+  FunctionLiteral,
+  CallExpression,
 } from '../ast/ast';
 import {
   BaseObject,
@@ -20,6 +23,7 @@ import {
   ObjectTypes,
   ReturnValue,
   ErrorObject,
+  FunctionObject,
 } from '../object/object';
 import { Environment } from '../object/environment';
 
@@ -79,6 +83,20 @@ export const evaluate = (node: Node, env: Environment): BaseObject => {
     return evaluateIfExpression(node, env);
   } else if (node instanceof Identifier) {
     return evaluateIdentifier(node, env);
+  } else if (node instanceof FunctionLiteral) {
+    const params = node.parameters;
+    const body = node.body;
+    return new FunctionObject(params, body, env);
+  } else if (node instanceof CallExpression) {
+    const func = evaluate(node.func, env);
+    if (isError(func)) {
+      return func;
+    }
+    const args = evaluateExpressions(node.arguments, env);
+    if (args.length === 1 && isError(args[0])) {
+      return args[0];
+    }
+    return applyFunction(func, args);
   }
   return NULL;
 };
@@ -265,7 +283,52 @@ const evaluateIdentifier = (node: Identifier, env: Environment): BaseObject => {
     : new ErrorObject(`identifier not found: ${node.value}`);
 };
 
-const isError = (obj: BaseObject | undefined): obj is ErrorObject | undefined => {
+const evaluateExpressions = (
+  exps: Expression[],
+  env: Environment
+): BaseObject[] => {
+  let result: BaseObject[] = [];
+  for (const e of exps) {
+    const evaluated = evaluate(e, env);
+    if (isError(evaluated)) {
+      return [evaluated];
+    }
+    result.push(evaluated);
+  }
+  return result;
+};
+
+const applyFunction = (fn: BaseObject, args: BaseObject[]): BaseObject => {
+  if (!(fn instanceof FunctionObject)) {
+    return new ErrorObject(`not a function: ${fn.type()}`);
+  }
+  const extendedEnv = extendFunctionEnv(fn, args);
+  const evaluated = evaluate(fn.body, extendedEnv);
+  return unwrapReturnValue(evaluated);
+};
+
+const extendFunctionEnv = (
+  fn: FunctionObject,
+  args: BaseObject[]
+): Environment => {
+  const env = Environment.newEnclosedEnvironment(fn.env);
+
+  fn.parameters.forEach((param, paramIdx) => {
+    env.setStore(param.value, args[paramIdx]);
+  });
+  return env;
+};
+
+const unwrapReturnValue = (obj: BaseObject): BaseObject => {
+  if (obj instanceof ReturnValue) {
+    return obj.value;
+  }
+  return obj;
+};
+
+const isError = (
+  obj: BaseObject | undefined
+): obj is ErrorObject | undefined => {
   if (obj != null) {
     return obj.type() === ObjectTypes.ERROR_OBJ;
   }

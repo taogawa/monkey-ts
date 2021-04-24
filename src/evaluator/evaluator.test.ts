@@ -6,6 +6,7 @@ import {
   BooleanObject,
   NullObject,
   ErrorObject,
+  FunctionObject,
 } from '../object/object';
 import { evaluate } from '../evaluator/evaluator';
 import { Environment } from '../object/environment';
@@ -196,6 +197,40 @@ if (10 > 1) {
     const errObj = evaluated as ErrorObject;
     expect(errObj.constructor).toBe(ErrorObject);
     expect(errObj.message).toBe(tt.expectedMessage);
+  });
+});
+
+test('function object', () => {
+  const input = 'fn(x) { x + 2; };';
+
+  const evaluated = testEvaluate(input);
+  const fn = evaluated as FunctionObject;
+  expect(fn.constructor).toBe(FunctionObject);
+  expect(fn.parameters.length).toBe(1);
+  expect(fn.parameters[0].toString()).toBe('x');
+  const expectedBody = '(x + 2)';
+  expect(fn.body.toString()).toBe(expectedBody);
+});
+
+test('function application', () => {
+  const tests: Array<{
+    input: string;
+    expected: number;
+  }> = [
+    { input: 'let identity = fn(x) { x; }; identity(5);', expected: 5 },
+    { input: 'let identity = fn(x) { return x; }; identity(5);', expected: 5 },
+    { input: 'let double = fn(x) { x * 2; }; double(5);', expected: 10 },
+    { input: 'let add = fn(x, y) { x + y; }; add(5, 5);', expected: 10 },
+    {
+      input: 'let add = fn(x, y) { x + y; }; add(5 + 5, add(5, 5));',
+      expected: 20,
+    },
+    { input: 'fn(x) { x; }(5)', expected: 5 },
+  ];
+
+  tests.forEach((tt) => {
+    const evaluated = testEvaluate(tt.input);
+    testIntegerObject(evaluated!, tt.expected);
   });
 });
 

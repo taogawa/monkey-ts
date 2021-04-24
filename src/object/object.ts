@@ -1,3 +1,6 @@
+import { BlockStatement, Identifier } from 'ast/ast';
+import { Environment } from './environment';
+
 export type ObjectType = typeof ObjectTypes[keyof typeof ObjectTypes];
 
 export const ObjectTypes = {
@@ -6,6 +9,7 @@ export const ObjectTypes = {
   INTEGER_OBJ: 'INTEGER',
   BOOLEAN_OBJ: 'BOOLEAN',
   RETURN_VALUE_OBJ: 'RETURN_VALUE',
+  FUNCTION_OBJ: 'FUNCTION',
 };
 
 export type BaseObject = {
@@ -63,5 +67,23 @@ export class ErrorObject implements BaseObject {
   }
   inspect(): string {
     return `ERROR: ${this.message}`;
+  }
+}
+
+export class FunctionObject implements BaseObject {
+  constructor(
+    public parameters: Identifier[],
+    public body: BlockStatement,
+    public env: Environment
+  ) {}
+
+  type(): ObjectType {
+    return ObjectTypes.FUNCTION_OBJ;
+  }
+  inspect(): string {
+    const params: string[] = this.parameters.map((p) => {
+      return p.toString();
+    });
+    return `fn(${params.join(', ')}) {\n${this.body.toString()}\n}`;
   }
 }
