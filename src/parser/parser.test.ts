@@ -12,6 +12,7 @@ import {
   IfExpression,
   FunctionLiteral,
   CallExpression,
+  StringLiteral,
 } from '../ast/ast';
 import { Parser } from '../parser/parser';
 import { Lexer } from '../lexer/lexer';
@@ -488,6 +489,20 @@ test('call expression parsing', () => {
   testLiteralExpression(exp.arguments[0], 1);
   testInfixExpression(exp.arguments[1], 2, '*', 3);
   testInfixExpression(exp.arguments[2], 4, '+', 5);
+});
+
+test('string literal expression', () => {
+  const input = `"hello world";`;
+
+  const l = new Lexer(input);
+  const p = new Parser(l);
+  const program = p.parseProgram();
+  checkParserErrors(p);
+
+  const stmt = program.statements[0] as ExpressionStatement;
+  const literal = stmt.expression as StringLiteral;
+  expect(literal.constructor).toBe(StringLiteral);
+  expect(literal.value).toBe('hello world');
 });
 
 const testLetStatement = (s: Statement, name: string): void => {

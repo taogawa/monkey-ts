@@ -14,6 +14,7 @@ import {
   PrefixExpression,
   InfixExpression,
   IfExpression,
+  StringLiteral,
 } from '../ast/ast';
 import { Lexer } from '../lexer/lexer';
 import { Token, TokenType, TokenTypes } from '../token/token';
@@ -58,6 +59,7 @@ export class Parser {
     this.prefixParseFns = {};
     this.registerPrefix(TokenTypes.IDENT, this.parseIdentifier);
     this.registerPrefix(TokenTypes.INT, this.parseIntegerLiteral);
+    this.registerPrefix(TokenTypes.STRING, this.parseStringLiteral);
     this.registerPrefix(TokenTypes.BANG, this.parsePrefixExpression);
     this.registerPrefix(TokenTypes.MINUS, this.parsePrefixExpression);
     this.registerPrefix(TokenTypes.TRUE, this.parseBool);
@@ -320,6 +322,10 @@ export class Parser {
     }
 
     return identifiers;
+  }
+
+  private parseStringLiteral():Expression {
+    return new StringLiteral(this.curToken, this.curToken.literal)
   }
 
   private parseCallExpression(func: Expression): Expression {
