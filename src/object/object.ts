@@ -8,6 +8,7 @@ export const ObjectTypes = {
   ERROR_OBJ: 'ERROR',
   INTEGER_OBJ: 'INTEGER',
   BOOLEAN_OBJ: 'BOOLEAN',
+  STRING_OBJ: 'STRING',
   RETURN_VALUE_OBJ: 'RETURN_VALUE',
   FUNCTION_OBJ: 'FUNCTION',
 };
@@ -80,10 +81,23 @@ export class FunctionObject implements BaseObject {
   type(): ObjectType {
     return ObjectTypes.FUNCTION_OBJ;
   }
+
   inspect(): string {
     const params: string[] = this.parameters.map((p) => {
       return p.toString();
     });
     return `fn(${params.join(', ')}) {\n${this.body.toString()}\n}`;
+  }
+}
+
+export class StringObject implements BaseObject {
+  constructor(public value: string) {}
+
+  type(): ObjectType {
+    return ObjectTypes.STRING_OBJ;
+  }
+
+  inspect(): string {
+    return this.value;
   }
 }

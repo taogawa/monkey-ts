@@ -7,6 +7,7 @@ import {
   NullObject,
   ErrorObject,
   FunctionObject,
+  StringObject,
 } from '../object/object';
 import { evaluate } from '../evaluator/evaluator';
 import { Environment } from '../object/environment';
@@ -244,6 +245,15 @@ test('closures', () => {
  addTwo(2);
  `;
   testIntegerObject(testEvaluate(input)!, 4); // eslint-disable-line @typescript-eslint/no-non-null-assertion
+});
+
+test('StringLiteral', () => {
+  const input = `"Hello World!"`;
+
+  const evaluated = testEvaluate(input);
+  const str = evaluated as StringObject;
+  expect(str.constructor).toBe(StringObject);
+  expect(str.value).toBe('Hello World!');
 });
 
 const testEvaluate = (input: string): BaseObject | undefined => {

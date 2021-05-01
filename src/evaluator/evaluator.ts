@@ -14,6 +14,7 @@ import {
   LetStatement,
   FunctionLiteral,
   CallExpression,
+  StringLiteral,
 } from '../ast/ast';
 import {
   BaseObject,
@@ -24,6 +25,7 @@ import {
   ReturnValue,
   ErrorObject,
   FunctionObject,
+  StringObject,
 } from '../object/object';
 import { Environment } from '../object/environment';
 
@@ -55,6 +57,8 @@ export const evaluate = (node: Node, env: Environment): BaseObject => {
     env.setStore(node.name.value, val);
   } else if (node instanceof IntegerLiteral) {
     return new IntegerObject(node.value);
+  } else if (node instanceof StringLiteral) {
+    return new StringObject(node.value);
   } else if (node instanceof Bool) {
     return nativeBoolToBooleanObject(node.value);
   } else if (node instanceof PrefixExpression) {
