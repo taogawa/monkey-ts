@@ -174,6 +174,10 @@ test('test error handling', () => {
       expectedMessage: 'unknown operator: BOOLEAN + BOOLEAN',
     },
     {
+      input: `"Hello" - "World"`,
+      expectedMessage: 'unknown operator: STRING - STRING',
+    },
+    {
       input: 'if (10 > 1) { true + false; }',
       expectedMessage: 'unknown operator: BOOLEAN + BOOLEAN',
     },
@@ -249,6 +253,15 @@ test('closures', () => {
 
 test('StringLiteral', () => {
   const input = `"Hello World!"`;
+
+  const evaluated = testEvaluate(input);
+  const str = evaluated as StringObject;
+  expect(str.constructor).toBe(StringObject);
+  expect(str.value).toBe('Hello World!');
+});
+
+test('string concatenation', () => {
+  const input = `"Hello" + " " + "World!"`;
 
   const evaluated = testEvaluate(input);
   const str = evaluated as StringObject;

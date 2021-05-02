@@ -164,6 +164,8 @@ const evaluateInfixExpression = (
 ): BaseObject => {
   if (isIntegerObject(left) && isIntegerObject(right)) {
     return evaluateIntegerInfixExpression(operator, left, right);
+  } else if (isStringObject(left) && isStringObject(right)) {
+    return evaluateStringInfixExpression(operator, left, right);
   } else if (operator === '==') {
     return nativeBoolToBooleanObject(left === right);
   } else if (operator === '!=') {
@@ -210,7 +212,7 @@ const evaluateIntegerInfixExpression = (
   operator: string,
   left: IntegerObject,
   right: IntegerObject
-): BaseObject => {
+): IntegerObject | BooleanObject | ErrorObject => {
   const leftVal = left.value;
   const rightVal = right.value;
 
@@ -245,6 +247,22 @@ const evaluateIntegerInfixExpression = (
       );
     }
   }
+};
+
+const evaluateStringInfixExpression = (
+  operator: string,
+  left: StringObject,
+  right: StringObject
+): StringObject | ErrorObject => {
+  if (operator !== '+') {
+    return new ErrorObject(
+      `unknown operator: ${left.type()} ${operator} ${right.type()}`
+    );
+  }
+
+  const leftVal = (left as StringObject).value;
+  const rightVal = (right as StringObject).value;
+  return new StringObject(leftVal + rightVal);
 };
 
 const evaluateIfExpression = (
@@ -341,4 +359,8 @@ const isError = (
 
 const isIntegerObject = (obj: BaseObject): obj is IntegerObject => {
   return obj.type() === ObjectTypes.INTEGER_OBJ;
+};
+
+const isStringObject = (obj: BaseObject): obj is StringObject => {
+  return obj.type() === ObjectTypes.STRING_OBJ;
 };
