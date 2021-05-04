@@ -269,7 +269,43 @@ test('string concatenation', () => {
   expect(str.value).toBe('Hello World!');
 });
 
-const testEvaluate = (input: string): BaseObject | undefined => {
+test('builtin functions', () => {
+  const tests: Array<{
+    input: string;
+    expected: number | string;
+  }> = [
+    { input: `len("")`, expected: 0 },
+    { input: `len("four")`, expected: 4 },
+    { input: `len("hello world")`, expected: 11 },
+    {
+      input: `len(1)`,
+      expected: 'argument to `len` not supported, got INTEGER',
+    },
+    {
+      input: `len("one", "two")`,
+      expected: 'wrong number of arguments. got=2, want=1',
+    },
+  ];
+
+  tests.forEach((tt) => {
+    const evaluated = testEvaluate(tt.input);
+    const expected = tt.expected;
+    switch (typeof expected) {
+      case 'number': {
+        testIntegerObject(evaluated!, expected); // eslint-disable-line @typescript-eslint/no-non-null-assertion
+        break;
+      }
+      case 'string': {
+        const errObj = evaluated as ErrorObject;
+        expect(evaluated.constructor!).toBe(ErrorObject); // eslint-disable-line @typescript-eslint/no-non-null-assertion
+        expect(errObj.message).toBe(expected);
+        break;
+      }
+    }
+  });
+});
+
+const testEvaluate = (input: string): BaseObject => {
   const l = new Lexer(input);
   const p = new Parser(l);
   const program = p.parseProgram();

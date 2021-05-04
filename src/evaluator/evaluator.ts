@@ -26,8 +26,10 @@ import {
   ErrorObject,
   FunctionObject,
   StringObject,
+  Builtin,
 } from '../object/object';
 import { Environment } from '../object/environment';
+import { Builtins } from './builtins';
 
 const NULL = new NullObject();
 const TRUE = new BooleanObject(true);
@@ -300,9 +302,12 @@ const isTruthy = (obj: BaseObject): boolean => {
 
 const evaluateIdentifier = (node: Identifier, env: Environment): BaseObject => {
   const val = env.getStore(node.value);
-  return val != null
-    ? val
-    : new ErrorObject(`identifier not found: ${node.value}`);
+  if (val != null) {
+    return val;
+  } else if (Builtins[node.value]) {
+    return Builtins[node.value];
+  }
+  return new ErrorObject(`identifier not found: ${node.value}`);
 };
 
 const evaluateExpressions = (
@@ -321,12 +326,14 @@ const evaluateExpressions = (
 };
 
 const applyFunction = (fn: BaseObject, args: BaseObject[]): BaseObject => {
-  if (!(fn instanceof FunctionObject)) {
-    return new ErrorObject(`not a function: ${fn.type()}`);
+  if (fn instanceof FunctionObject) {
+    const extendedEnv = extendFunctionEnv(fn, args);
+    const evaluated = evaluate(fn.body, extendedEnv);
+    return unwrapReturnValue(evaluated);
+  } else if (fn instanceof Builtin) {
+    return fn.fn(...args);
   }
-  const extendedEnv = extendFunctionEnv(fn, args);
-  const evaluated = evaluate(fn.body, extendedEnv);
-  return unwrapReturnValue(evaluated);
+  return new ErrorObject(`not a function: ${fn.type()}`);
 };
 
 const extendFunctionEnv = (

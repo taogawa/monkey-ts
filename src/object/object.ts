@@ -11,12 +11,15 @@ export const ObjectTypes = {
   STRING_OBJ: 'STRING',
   RETURN_VALUE_OBJ: 'RETURN_VALUE',
   FUNCTION_OBJ: 'FUNCTION',
+  BUILTIN_OBJ: 'BUILTIN',
 };
 
 export type BaseObject = {
   type(): ObjectType;
   inspect(): string;
 };
+
+type BuiltinFunction = (...args: BaseObject[]) => BaseObject;
 
 export class IntegerObject implements BaseObject {
   constructor(public value: number) {}
@@ -99,5 +102,17 @@ export class StringObject implements BaseObject {
 
   inspect(): string {
     return this.value;
+  }
+}
+
+export class Builtin implements BaseObject {
+  constructor(public fn: BuiltinFunction) {}
+
+  type(): ObjectType {
+    return ObjectTypes.BUILTIN_OBJ;
+  }
+
+  inspect(): string {
+    return 'builtin function';
   }
 }
