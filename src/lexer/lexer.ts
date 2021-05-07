@@ -18,7 +18,7 @@ export class Lexer {
     let tok: Token;
     this.skipWhitespace();
     switch (this.ch) {
-      case '=':
+      case '=': {
         if (this.peekChar() === '=') {
           const ch = this.ch;
           this.readChar();
@@ -28,16 +28,20 @@ export class Lexer {
           tok = new Token(TokenTypes.ASSIGN, this.ch);
         }
         break;
-      case ';':
+      }
+      case ';': {
         tok = new Token(TokenTypes.SEMICOLON, this.ch);
         break;
-      case '+':
+      }
+      case '+': {
         tok = new Token(TokenTypes.PLUS, this.ch);
         break;
-      case '-':
+      }
+      case '-': {
         tok = new Token(TokenTypes.MINUS, this.ch);
         break;
-      case '!':
+      }
+      case '!': {
         if (this.peekChar() === '=') {
           const ch = this.ch;
           this.readChar();
@@ -47,40 +51,60 @@ export class Lexer {
           tok = new Token(TokenTypes.BANG, this.ch);
         }
         break;
-      case '*':
+      }
+      case '*': {
         tok = new Token(TokenTypes.ASTERISK, this.ch);
         break;
-      case '/':
+      }
+      case '/': {
         tok = new Token(TokenTypes.SLASH, this.ch);
         break;
-      case '<':
+      }
+      case '<': {
         tok = new Token(TokenTypes.LT, this.ch);
         break;
-      case '>':
+      }
+      case '>': {
         tok = new Token(TokenTypes.GT, this.ch);
         break;
-      case '(':
+      }
+      case '(': {
         tok = new Token(TokenTypes.LPAREN, this.ch);
         break;
-      case ')':
+      }
+      case ')': {
         tok = new Token(TokenTypes.RPAREN, this.ch);
         break;
-      case ',':
+      }
+      case ',': {
         tok = new Token(TokenTypes.COMMA, this.ch);
         break;
-      case '{':
+      }
+      case '{': {
         tok = new Token(TokenTypes.LBRACE, this.ch);
         break;
-      case '}':
+      }
+      case '}': {
         tok = new Token(TokenTypes.RBRACE, this.ch);
         break;
-      case '"':
+      }
+      case '"': {
         tok = new Token(TokenTypes.STRING, this.readString());
         break;
-      case '':
+      }
+      case '[': {
+        tok = new Token(TokenTypes.LBRACKET, this.ch);
+        break;
+      }
+      case ']': {
+        tok = new Token(TokenTypes.RBRACKET, this.ch);
+        break;
+      }
+      case '': {
         tok = new Token(TokenTypes.EOF, '');
         break;
-      default:
+      }
+      default: {
         if (this.isLetter(this.ch)) {
           const literal = this.readIdentifier();
           const tokenType = Token.lookupIdent(literal);
@@ -94,6 +118,7 @@ export class Lexer {
         } else {
           tok = new Token(TokenTypes.ILLEGAL, this.ch);
         }
+      }
     }
     this.readChar();
     return tok;

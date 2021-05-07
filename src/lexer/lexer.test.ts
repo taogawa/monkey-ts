@@ -22,6 +22,7 @@ if (5 < 10) {
 10 != 9;
 "foobar"
 "foo bar"
+[1, 2];
 `;
 
   const tests: Array<{
@@ -103,6 +104,12 @@ if (5 < 10) {
     { expectedType: TokenTypes.SEMICOLON, expectedLiteral: ';' },
     { expectedType: TokenTypes.STRING, expectedLiteral: 'foobar' },
     { expectedType: TokenTypes.STRING, expectedLiteral: 'foo bar' },
+    { expectedType: TokenTypes.LBRACKET, expectedLiteral: '[' },
+    { expectedType: TokenTypes.INT, expectedLiteral: '1' },
+    { expectedType: TokenTypes.COMMA, expectedLiteral: ',' },
+    { expectedType: TokenTypes.INT, expectedLiteral: '2' },
+    { expectedType: TokenTypes.RBRACKET, expectedLiteral: ']' },
+    { expectedType: TokenTypes.SEMICOLON, expectedLiteral: ';' },
     { expectedType: TokenTypes.EOF, expectedLiteral: '' },
   ];
   const l = new Lexer(input);
