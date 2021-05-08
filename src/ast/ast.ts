@@ -16,11 +16,7 @@ export type Expression = Node & {
 };
 
 export class Program implements Node {
-  statements: Statement[];
-
-  constructor() {
-    this.statements = [];
-  }
+  statements: Statement[] = [];
 
   tokenLiteral(): string {
     if (this.statements.length > 0) {
@@ -37,7 +33,7 @@ export class Program implements Node {
 
 // Statements
 export class LetStatement implements Statement {
-  public value?: Expression;
+  value?: Expression;
   constructor(public token: Token, public name: Identifier) {}
 
   statementNode(): void {
@@ -91,12 +87,10 @@ export class ExpressionStatement implements Statement {
 }
 
 export class BlockStatement implements Statement {
-  public statements: Statement[];
+  statements: Statement[] = [];
   constructor(
     public token: Token // The { token
-  ) {
-    this.statements = [];
-  }
+  ) {}
 
   statementNode(): void {
     return;
@@ -207,8 +201,8 @@ export class InfixExpression implements Expression {
 }
 
 export class IfExpression implements Expression {
-  public consequence!: BlockStatement;
-  public alternative!: BlockStatement;
+  consequence!: BlockStatement;
+  alternative!: BlockStatement;
 
   constructor(
     public token: Token, // The 'if' token
@@ -233,14 +227,12 @@ export class IfExpression implements Expression {
 }
 
 export class FunctionLiteral implements Expression {
-  parameters!: Identifier[];
+  parameters: Identifier[] = [];
   body!: BlockStatement;
 
   constructor(
     public token: Token // The 'fn' token
-  ) {
-    this.parameters = [];
-  }
+  ) {}
 
   expressionNode(): void {
     return;
@@ -251,15 +243,12 @@ export class FunctionLiteral implements Expression {
   }
 
   toString(): string {
-    const params: string[] = this.parameters.map((p) => {
-      return p.toString();
-    });
-    return `${this.tokenLiteral()}(${params.join(', ')})${this.body}`;
+    return `${this.tokenLiteral()}(${this.parameters.join(', ')})${this.body}`;
   }
 }
 
 export class CallExpression implements Expression {
-  public arguments!: Expression[];
+  arguments: Expression[] = [];
   constructor(
     public token: Token, // The '(' token
     public func: Expression // Identifier or FunctionLiteral
@@ -291,5 +280,24 @@ export class StringLiteral implements Expression {
 
   toString(): string {
     return this.token.literal;
+  }
+}
+
+export class ArrayLiteral implements Expression {
+  elements: Expression[] = [];
+  constructor(
+    public token: Token // the '[' token
+  ) {}
+
+  expressionNode(): void {
+    return;
+  }
+
+  tokenLiteral(): string {
+    return this.token.literal;
+  }
+
+  toString(): string {
+    return `[${this.elements.join(', ')}]`;
   }
 }

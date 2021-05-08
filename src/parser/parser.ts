@@ -15,6 +15,7 @@ import {
   InfixExpression,
   IfExpression,
   StringLiteral,
+  ArrayLiteral,
 } from '../ast/ast';
 import { Lexer } from '../lexer/lexer';
 import { Token, TokenType, TokenTypes } from '../token/token';
@@ -67,6 +68,7 @@ export class Parser {
     this.registerPrefix(TokenTypes.LPAREN, this.parseGroupedExpression);
     this.registerPrefix(TokenTypes.IF, this.parseIfExpression);
     this.registerPrefix(TokenTypes.FUNCTION, this.parseFunctionLiteral);
+    this.registerPrefix(TokenTypes.LBRACKET, this.parseArrayLiteral);
 
     this.infixParseFns = {};
     this.registerInfix(TokenTypes.PLUS, this.parseInfixExpression);
@@ -324,44 +326,44 @@ export class Parser {
     return identifiers;
   }
 
-  private parseStringLiteral():Expression {
-    return new StringLiteral(this.curToken, this.curToken.literal)
+  private parseStringLiteral(): Expression {
+    return new StringLiteral(this.curToken, this.curToken.literal);
   }
 
   private parseCallExpression(func: Expression): Expression {
     const exp = new CallExpression(this.curToken, func);
-    exp.arguments = this.parseCallArguments();
+    exp.arguments = this.parseExpressionList(TokenTypes.RPAREN);
     return exp;
   }
 
-  private parseCallArguments(): Expression[] {
-    const args: Expression[] = [];
+  private parseExpressionList(end: TokenType): Expression[] {
+    const list: Expression[] = [];
 
-    if (this.peekTokenIs(TokenTypes.RPAREN)) {
+    if (this.peekTokenIs(end)) {
       this.nextToken();
-      return args;
+      return list;
     }
 
     this.nextToken();
-    const firstArgExp = this.parseExpression(Precedences.LOWEST);
-    if (firstArgExp != null) {
-      args.push(firstArgExp);
+    const firstExp = this.parseExpression(Precedences.LOWEST);
+    if (firstExp != null) {
+      list.push(firstExp);
     }
 
     while (this.peekTokenIs(TokenTypes.COMMA)) {
       this.nextToken();
       this.nextToken();
-      const argExp = this.parseExpression(Precedences.LOWEST);
-      if (argExp != null) {
-        args.push(argExp);
+      const exp = this.parseExpression(Precedences.LOWEST);
+      if (exp != null) {
+        list.push(exp);
       }
     }
 
-    if (!this.expectPeek(TokenTypes.RPAREN)) {
+    if (!this.expectPeek(end)) {
       return [];
     }
 
-    return args;
+    return list;
   }
 
   private parseIntegerLiteral(): Expression | undefined {
@@ -397,6 +399,14 @@ export class Parser {
     expression.right = this.parseExpression(precedence);
 
     return expression;
+  }
+
+  private parseArrayLiteral(): Expression {
+    const array = new ArrayLiteral(this.curToken);
+
+    array.elements = this.parseExpressionList(TokenTypes.RBRACKET);
+
+    return array;
   }
 
   private registerPrefix(tokenType: TokenType, fn: PrefixParseFn): void {

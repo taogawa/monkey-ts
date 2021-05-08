@@ -13,6 +13,7 @@ import {
   FunctionLiteral,
   CallExpression,
   StringLiteral,
+  ArrayLiteral,
 } from '../ast/ast';
 import { Parser } from '../parser/parser';
 import { Lexer } from '../lexer/lexer';
@@ -503,6 +504,23 @@ test('string literal expression', () => {
   const literal = stmt.expression as StringLiteral;
   expect(literal.constructor).toBe(StringLiteral);
   expect(literal.value).toBe('hello world');
+});
+test('parsing array literals', () => {
+  const input = '[1, 2 * 2, 3 + 3]';
+
+  const l = new Lexer(input);
+  const p = new Parser(l);
+  const program = p.parseProgram();
+  checkParserErrors(p);
+
+  const stmt = program.statements[0] as ExpressionStatement;
+  const array = stmt.expression as ArrayLiteral;
+  expect(array.constructor).toBe(ArrayLiteral);
+
+  expect(array.elements.length).toBe(3);
+  testIntegerLiteral(array.elements[0], 1);
+  testInfixExpression(array.elements[1], 2, '*', 2);
+  testInfixExpression(array.elements[2], 3, '+', 3);
 });
 
 const testLetStatement = (s: Statement, name: string): void => {
