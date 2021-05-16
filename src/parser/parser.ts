@@ -16,6 +16,7 @@ import {
   IfExpression,
   StringLiteral,
   ArrayLiteral,
+  IndexExpression,
 } from '../ast/ast';
 import { Lexer } from '../lexer/lexer';
 import { Token, TokenType, TokenTypes } from '../token/token';
@@ -28,6 +29,7 @@ const enum Precedences {
   PRODUCT, // *
   PREFIX, // -X or !X
   CALL, // myFunction(X)
+  INDEX, // array[index]
 }
 
 const OperatorPrecedences: { [key in TokenType]?: Precedences } = {
@@ -40,10 +42,11 @@ const OperatorPrecedences: { [key in TokenType]?: Precedences } = {
   [TokenTypes.SLASH]: Precedences.PRODUCT,
   [TokenTypes.ASTERISK]: Precedences.PRODUCT,
   [TokenTypes.LPAREN]: Precedences.CALL,
+  [TokenTypes.LBRACKET]: Precedences.INDEX,
 };
 
 type PrefixParseFn = () => Expression | undefined;
-type InfixParseFn = (expression: Expression) => Expression;
+type InfixParseFn = (expression: Expression) => Expression | undefined;
 
 export class Parser {
   private l: Lexer;
@@ -80,6 +83,7 @@ export class Parser {
     this.registerInfix(TokenTypes.LT, this.parseInfixExpression);
     this.registerInfix(TokenTypes.GT, this.parseInfixExpression);
     this.registerInfix(TokenTypes.LPAREN, this.parseCallExpression);
+    this.registerInfix(TokenTypes.LBRACKET, this.parseIndexExpression);
 
     this.nextToken();
     this.nextToken();
@@ -407,6 +411,16 @@ export class Parser {
     array.elements = this.parseExpressionList(TokenTypes.RBRACKET);
 
     return array;
+  }
+
+  private parseIndexExpression(left: Expression): Expression | undefined {
+    const exp = new IndexExpression(this.curToken, left);
+    this.nextToken();
+    exp.index = this.parseExpression(Precedences.LOWEST);
+    if (!this.expectPeek(TokenTypes.RBRACKET)) {
+      return undefined;
+    }
+    return exp;
   }
 
   private registerPrefix(tokenType: TokenType, fn: PrefixParseFn): void {

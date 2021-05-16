@@ -301,3 +301,23 @@ export class ArrayLiteral implements Expression {
     return `[${this.elements.join(', ')}]`;
   }
 }
+
+export class IndexExpression implements Expression {
+  public index?: Expression
+  constructor(
+    public token: Token, // the '[' token
+    public left: Expression,
+  ) {}
+
+  expressionNode(): void {
+    return;
+  }
+
+  tokenLiteral(): string {
+    return this.token.literal;
+  }
+
+  toString(): string {
+    return `(${this.left}[${this.index}])`;
+  }
+}

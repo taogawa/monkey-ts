@@ -14,6 +14,7 @@ import {
   CallExpression,
   StringLiteral,
   ArrayLiteral,
+  IndexExpression,
 } from '../ast/ast';
 import { Parser } from '../parser/parser';
 import { Lexer } from '../lexer/lexer';
@@ -336,6 +337,14 @@ test('operator precedence parsing', () => {
       input: 'add(a + b + c * d / f + g)',
       expected: 'add((((a + b) + ((c * d) / f)) + g))',
     },
+    {
+      input: 'a * [1, 2, 3, 4][b * c] * d',
+      expected: '((a * ([1, 2, 3, 4][(b * c)])) * d)',
+    },
+    {
+      input: 'add(a * b[2], b[1], 2 * [1, 2][1])',
+      expected: 'add((a * (b[2])), (b[1]), (2 * ([1, 2][1])))',
+    },
   ];
   tests.forEach((tt) => {
     const l = new Lexer(tt.input);
@@ -505,6 +514,7 @@ test('string literal expression', () => {
   expect(literal.constructor).toBe(StringLiteral);
   expect(literal.value).toBe('hello world');
 });
+
 test('parsing array literals', () => {
   const input = '[1, 2 * 2, 3 + 3]';
 
@@ -521,6 +531,22 @@ test('parsing array literals', () => {
   testIntegerLiteral(array.elements[0], 1);
   testInfixExpression(array.elements[1], 2, '*', 2);
   testInfixExpression(array.elements[2], 3, '+', 3);
+});
+
+test('parsing index expressions', () => {
+  const input = 'myArray[1 + 1]';
+
+  const l = new Lexer(input);
+  const p = new Parser(l);
+  const program = p.parseProgram();
+  checkParserErrors(p);
+
+  const stmt = program.statements[0] as ExpressionStatement;
+  const indexExp = stmt.expression as IndexExpression;
+  expect(indexExp.constructor).toBe(IndexExpression);
+
+  testIdentifier(indexExp.left, 'myArray');
+  testInfixExpression(indexExp.index, 1, '+', 1);
 });
 
 const testLetStatement = (s: Statement, name: string): void => {
