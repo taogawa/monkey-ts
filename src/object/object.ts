@@ -12,6 +12,7 @@ export const ObjectTypes = {
   RETURN_VALUE_OBJ: 'RETURN_VALUE',
   FUNCTION_OBJ: 'FUNCTION',
   BUILTIN_OBJ: 'BUILTIN',
+  ARRAY_OBJ: 'ARRAY',
 };
 
 export type BaseObject = {
@@ -86,10 +87,7 @@ export class FunctionObject implements BaseObject {
   }
 
   inspect(): string {
-    const params: string[] = this.parameters.map((p) => {
-      return p.toString();
-    });
-    return `fn(${params.join(', ')}) {\n${this.body.toString()}\n}`;
+    return `fn(${this.parameters.join(', ')}) {\n${this.body.toString()}\n}`;
   }
 }
 
@@ -114,5 +112,20 @@ export class Builtin implements BaseObject {
 
   inspect(): string {
     return 'builtin function';
+  }
+}
+
+export class ArrayObject implements BaseObject {
+  constructor(public elements: BaseObject[]) {}
+
+  type(): ObjectType {
+    return ObjectTypes.ARRAY_OBJ;
+  }
+
+  inspect(): string {
+    const elems: string[] = this.elements.map((p) => {
+      return p.inspect();
+    });
+    return `[${elems.join(', ')}]`;
   }
 }

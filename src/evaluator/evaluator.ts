@@ -15,6 +15,7 @@ import {
   FunctionLiteral,
   CallExpression,
   StringLiteral,
+  ArrayLiteral,
 } from '../ast/ast';
 import {
   BaseObject,
@@ -27,6 +28,7 @@ import {
   FunctionObject,
   StringObject,
   Builtin,
+  ArrayObject,
 } from '../object/object';
 import { Environment } from '../object/environment';
 import { Builtins } from './builtins';
@@ -103,6 +105,12 @@ export const evaluate = (node: Node, env: Environment): BaseObject => {
       return args[0];
     }
     return applyFunction(func, args);
+  } else if (node instanceof ArrayLiteral) {
+    const elements = evaluateExpressions(node.elements, env);
+    if (elements.length == 1 && isError(elements[0])) {
+      return elements[0];
+    }
+    return new ArrayObject(elements);
   }
   return NULL;
 };

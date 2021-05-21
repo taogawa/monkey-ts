@@ -8,6 +8,7 @@ import {
   ErrorObject,
   FunctionObject,
   StringObject,
+  ArrayObject,
 } from '../object/object';
 import { evaluate } from '../evaluator/evaluator';
 import { Environment } from '../object/environment';
@@ -297,12 +298,24 @@ test('builtin functions', () => {
       }
       case 'string': {
         const errObj = evaluated as ErrorObject;
-        expect(evaluated.constructor!).toBe(ErrorObject); // eslint-disable-line @typescript-eslint/no-non-null-assertion
+        expect(errObj.constructor!).toBe(ErrorObject); // eslint-disable-line @typescript-eslint/no-non-null-assertion
         expect(errObj.message).toBe(expected);
         break;
       }
     }
   });
+});
+
+test('array literals', () => {
+  const input = '[1, 2 * 2, 3 + 3]';
+  const evaluated = testEvaluate(input);
+
+  const result = evaluated as ArrayObject;
+  expect(result.constructor).toBe(ArrayObject);
+  expect(result.elements.length).toBe(3);
+  testIntegerObject(result.elements[0], 1);
+  testIntegerObject(result.elements[1], 4);
+  testIntegerObject(result.elements[2], 6);
 });
 
 const testEvaluate = (input: string): BaseObject => {
