@@ -16,6 +16,7 @@ import {
   CallExpression,
   StringLiteral,
   ArrayLiteral,
+  IndexExpression,
 } from '../ast/ast';
 import {
   BaseObject,
@@ -111,6 +112,19 @@ export const evaluate = (node: Node, env: Environment): BaseObject => {
       return elements[0];
     }
     return new ArrayObject(elements);
+  } else if (node instanceof IndexExpression) {
+    const left = evaluate(node.left, env);
+    if (isError(left)) {
+      return left;
+    }
+    if (node.index == null) {
+      return NULL;
+    }
+    const index = evaluate(node.index, env);
+    if (isError(index)) {
+      return index;
+    }
+    return evaluateIndexExpression(left, index);
   }
   return NULL;
 };
@@ -331,6 +345,35 @@ const evaluateExpressions = (
     result.push(evaluated);
   }
   return result;
+};
+
+const evaluateIndexExpression = (
+  left: BaseObject,
+  index: BaseObject
+): BaseObject => {
+  if (
+    left.type() === ObjectTypes.ARRAY_OBJ &&
+    index.type() === ObjectTypes.INTEGER_OBJ
+  ) {
+    return evaluateArrayIndexExpression(left, index);
+  } else {
+    return new ErrorObject(`index operator not supported: ${left.type()}`);
+  }
+};
+
+const evaluateArrayIndexExpression = (
+  array: BaseObject,
+  index: BaseObject
+): BaseObject => {
+  const arrayObject = array as ArrayObject;
+  const idx = (index as IntegerObject).value;
+  const max = arrayObject.elements.length - 1;
+
+  if (idx < 0 || idx > max) {
+    return NULL;
+  }
+
+  return arrayObject.elements[idx];
 };
 
 const applyFunction = (fn: BaseObject, args: BaseObject[]): BaseObject => {
