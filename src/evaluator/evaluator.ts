@@ -34,9 +34,9 @@ import {
 import { Environment } from '../object/environment';
 import { Builtins } from './builtins';
 
-const NULL = new NullObject();
-const TRUE = new BooleanObject(true);
-const FALSE = new BooleanObject(false);
+export const NULL = new NullObject();
+export const TRUE = new BooleanObject(true);
+export const FALSE = new BooleanObject(false);
 
 export const evaluate = (node: Node, env: Environment): BaseObject => {
   if (node instanceof Program) {

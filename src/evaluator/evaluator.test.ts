@@ -273,7 +273,7 @@ test('string concatenation', () => {
 test('builtin functions', () => {
   const tests: Array<{
     input: string;
-    expected: number | string;
+    expected: number | string | number[] | undefined;
   }> = [
     { input: `len("")`, expected: 0 },
     { input: `len("four")`, expected: 4 },
@@ -285,6 +285,28 @@ test('builtin functions', () => {
     {
       input: `len("one", "two")`,
       expected: 'wrong number of arguments. got=2, want=1',
+    },
+    { input: `len([1, 2, 3])`, expected: 3 },
+    { input: `len([])`, expected: 0 },
+    { input: `puts("hello", "world!")`, expected: undefined },
+    { input: `first([1, 2, 3])`, expected: 1 },
+    { input: `first([])`, expected: undefined },
+    {
+      input: `first(1)`,
+      expected: 'argument to `first` must be ARRAY, got INTEGER',
+    },
+    { input: `last([1, 2, 3])`, expected: 3 },
+    { input: `last([])`, expected: undefined },
+    {
+      input: `last(1)`,
+      expected: 'argument to `last` must be ARRAY, got INTEGER',
+    },
+    { input: `rest([1, 2, 3])`, expected: [2, 3] },
+    { input: `rest([])`, expected: undefined },
+    { input: `push([], 1)`, expected: [1] },
+    {
+      input: `push(1, 1)`,
+      expected: 'argument to `push` must be ARRAY, got INTEGER',
     },
   ];
 
