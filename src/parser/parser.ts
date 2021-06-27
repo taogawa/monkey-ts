@@ -17,6 +17,7 @@ import {
   StringLiteral,
   ArrayLiteral,
   IndexExpression,
+  HashLiteral,
 } from '../ast/ast';
 import { Lexer } from '../lexer/lexer';
 import { Token, TokenType, TokenTypes } from '../token/token';
@@ -72,6 +73,7 @@ export class Parser {
     this.registerPrefix(TokenTypes.IF, this.parseIfExpression);
     this.registerPrefix(TokenTypes.FUNCTION, this.parseFunctionLiteral);
     this.registerPrefix(TokenTypes.LBRACKET, this.parseArrayLiteral);
+    this.registerPrefix(TokenTypes.LBRACE, this.parseHashLiteral);
 
     this.infixParseFns = {};
     this.registerInfix(TokenTypes.PLUS, this.parseInfixExpression);
@@ -411,6 +413,39 @@ export class Parser {
     array.elements = this.parseExpressionList(TokenTypes.RBRACKET);
 
     return array;
+  }
+
+  private parseHashLiteral(): Expression | undefined {
+    const pairs = new Map<Expression, Expression>();
+    const hash = new HashLiteral(this.curToken, pairs);
+
+    while (!this.peekTokenIs(TokenTypes.RBRACE)) {
+      this.nextToken();
+      const key = this.parseExpression(Precedences.LOWEST);
+
+      if (!this.expectPeek(TokenTypes.COLON)) {
+        return undefined;
+      }
+
+      this.nextToken();
+      const value = this.parseExpression(Precedences.LOWEST);
+      if (key != null && value != null) {
+        hash.pairs.set(key, value);
+      }
+
+      if (
+        !this.peekTokenIs(TokenTypes.RBRACE) &&
+        !this.expectPeek(TokenTypes.COMMA)
+      ) {
+        return undefined;
+      }
+    }
+
+    if (!this.expectPeek(TokenTypes.RBRACE)) {
+      return undefined;
+    }
+
+    return hash;
   }
 
   private parseIndexExpression(left: Expression): Expression | undefined {

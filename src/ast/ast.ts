@@ -303,10 +303,10 @@ export class ArrayLiteral implements Expression {
 }
 
 export class IndexExpression implements Expression {
-  public index?: Expression
+  public index?: Expression;
   constructor(
     public token: Token, // the '[' token
-    public left: Expression,
+    public left: Expression
   ) {}
 
   expressionNode(): void {
@@ -319,5 +319,25 @@ export class IndexExpression implements Expression {
 
   toString(): string {
     return `(${this.left}[${this.index}])`;
+  }
+}
+
+export class HashLiteral implements Expression {
+  constructor(public token: Token, public pairs: Map<Expression, Expression>) {}
+
+  expressionNode(): void {
+    return;
+  }
+
+  tokenLiteral(): string {
+    return this.token.literal;
+  }
+
+  toString(): string {
+    let pairs: string[] = [];
+    this.pairs.forEach((value, key) => {
+      pairs.push(`${key.toString()}:${value.toString()}`);
+    });
+    return `{${pairs.join(', ')}]}`;
   }
 }

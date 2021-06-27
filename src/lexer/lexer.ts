@@ -33,6 +33,10 @@ export class Lexer {
         tok = new Token(TokenTypes.SEMICOLON, this.ch);
         break;
       }
+      case ':': {
+        tok = new Token(TokenTypes.COLON, this.ch);
+        break;
+      }
       case '+': {
         tok = new Token(TokenTypes.PLUS, this.ch);
         break;

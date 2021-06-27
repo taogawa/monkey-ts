@@ -15,6 +15,7 @@ import {
   StringLiteral,
   ArrayLiteral,
   IndexExpression,
+  HashLiteral,
 } from '../ast/ast';
 import { Parser } from '../parser/parser';
 import { Lexer } from '../lexer/lexer';
@@ -547,6 +548,82 @@ test('parsing index expressions', () => {
 
   testIdentifier(indexExp.left, 'myArray');
   testInfixExpression(indexExp.index, 1, '+', 1);
+});
+
+test('parsing empty hash literal', () => {
+  const input = '{}';
+
+  const l = new Lexer(input);
+  const p = new Parser(l);
+  const program = p.parseProgram();
+  checkParserErrors(p);
+
+  const stmt = program.statements[0] as ExpressionStatement;
+  const hash = stmt.expression as HashLiteral;
+  expect(hash.constructor).toBe(HashLiteral);
+  expect(hash.pairs.size).toBe(0);
+});
+
+test('parsing hash literals string keys', () => {
+  const input = '{"one": 1, "two": 2, "three": 3}';
+
+  const l = new Lexer(input);
+  const p = new Parser(l);
+  const program = p.parseProgram();
+  checkParserErrors(p);
+
+  const stmt = program.statements[0] as ExpressionStatement;
+  const hash = stmt.expression as HashLiteral;
+  expect(hash.constructor).toBe(HashLiteral);
+  expect(hash.pairs.size).toBe(3);
+
+  const expected: { [k: string]: number } = {
+    one: 1,
+    two: 2,
+    three: 3,
+  };
+
+  hash.pairs.forEach((value, key) => {
+    const literal = key as StringLiteral;
+    expect(literal.constructor).toBe(StringLiteral);
+    const expectedValue = expected[literal.toString()];
+    testIntegerLiteral(value, expectedValue!);
+  });
+});
+
+test('parsing hash literals with expressions', () => {
+  const input = '{"one": 0 + 1, "two": 10 - 8, "three": 15 / 5}';
+
+  const l = new Lexer(input);
+  const p = new Parser(l);
+  const program = p.parseProgram();
+  checkParserErrors(p);
+
+  const stmt = program.statements[0] as ExpressionStatement;
+  const hash = stmt.expression as HashLiteral;
+  expect(hash.constructor).toBe(HashLiteral);
+  expect(hash.pairs.size).toBe(3);
+
+  const tests: { [k: string]: (e: Expression) => void } = {
+    one: (e: Expression) => {
+      testInfixExpression(e, 0, '+', 1);
+    },
+    two: (e: Expression) => {
+      testInfixExpression(e, 10, '-', 8);
+    },
+    three: (e: Expression) => {
+      testInfixExpression(e, 15, '/', 5);
+    },
+  };
+
+  hash.pairs.forEach((value, key) => {
+    const literal = key as StringLiteral;
+    expect(literal.constructor).toBe(StringLiteral);
+
+    const testFunc = tests[literal.toString()];
+    expect(testFunc).not.toBe(null);
+    testFunc(value);
+  });
 });
 
 const testLetStatement = (s: Statement, name: string): void => {

@@ -26,6 +26,7 @@ export const TokenTypes = {
   // Delimiters
   COMMA: ',',
   SEMICOLON: ';',
+  COLON: ':',
 
   LPAREN: '(',
   RPAREN: ')',
