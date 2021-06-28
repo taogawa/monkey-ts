@@ -28,8 +28,13 @@ export class IntegerObject implements BaseObject {
   type(): ObjectType {
     return ObjectTypes.INTEGER_OBJ;
   }
+
   inspect(): string {
     return this.value.toString();
+  }
+
+  hashKey(): HashKey {
+    return new HashKey(this.type(), this.value);
   }
 }
 
@@ -39,8 +44,13 @@ export class BooleanObject implements BaseObject {
   type(): ObjectType {
     return ObjectTypes.BOOLEAN_OBJ;
   }
+
   inspect(): string {
     return this.value.toString();
+  }
+
+  hashKey(): HashKey {
+    return new HashKey(this.type(), this.value ? 1 : 0);
   }
 }
 
@@ -48,6 +58,7 @@ export class NullObject implements BaseObject {
   type(): ObjectType {
     return ObjectTypes.NULL_OBJ;
   }
+
   inspect(): string {
     return 'null';
   }
@@ -59,6 +70,7 @@ export class ReturnValue implements BaseObject {
   type(): ObjectType {
     return ObjectTypes.RETURN_VALUE_OBJ;
   }
+
   inspect(): string {
     return this.value.inspect();
   }
@@ -70,6 +82,7 @@ export class ErrorObject implements BaseObject {
   type(): ObjectType {
     return ObjectTypes.ERROR_OBJ;
   }
+
   inspect(): string {
     return `ERROR: ${this.message}`;
   }
@@ -101,6 +114,15 @@ export class StringObject implements BaseObject {
   inspect(): string {
     return this.value;
   }
+
+  hashKey(): HashKey {
+    let hash = 0;
+    for (let i = 0; i < this.value.length; i++) {
+      hash = hash * 31 + this.value.charCodeAt(i);
+      hash = hash | 0;
+    }
+    return new HashKey(this.type(), hash);
+  }
 }
 
 export class Builtin implements BaseObject {
@@ -128,4 +150,8 @@ export class ArrayObject implements BaseObject {
     });
     return `[${elems.join(', ')}]`;
   }
+}
+
+export class HashKey {
+  constructor(public type: ObjectType, public value: number) {}
 }
