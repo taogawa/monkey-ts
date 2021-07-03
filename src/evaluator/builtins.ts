@@ -29,6 +29,14 @@ export const Builtins: { [key: string]: Builtin } = {
       }
     }
   ),
+  puts: new Builtin(
+    (...args: BaseObject[]): BaseObject => {
+      args.forEach((arg) => {
+        console.log(arg.inspect());
+      });
+      return NULL;
+    }
+  ),
   first: new Builtin(
     (...args: BaseObject[]): BaseObject => {
       if (args.length !== 1) {
