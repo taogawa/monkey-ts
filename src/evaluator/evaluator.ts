@@ -362,6 +362,8 @@ const evaluateIndexExpression = (
     index.type() === ObjectTypes.INTEGER_OBJ
   ) {
     return evaluateArrayIndexExpression(left, index);
+  } else if (left.type() == ObjectTypes.HASH_OBJ) {
+    return evaluateHashIndexExpression(left, index);
   } else {
     return new ErrorObject(`index operator not supported: ${left.type()}`);
   }
@@ -380,6 +382,19 @@ const evaluateArrayIndexExpression = (
   }
 
   return arrayObject.elements[idx];
+};
+
+const evaluateHashIndexExpression = (hash: BaseObject, index: BaseObject) => {
+  const hashObject = hash as HashObject;
+  const key = index as Hashable;
+  if (!isHashable(key)) {
+    return new ErrorObject(`unusable as hash key: ${index.type()}`);
+  }
+  const pair = hashObject.pairs.get(key.hashKey());
+  if (pair == null) {
+    return NULL;
+  }
+  return pair.value;
 };
 
 const evaluateHashLiteral = (

@@ -198,6 +198,10 @@ if (10 > 1) {
       input: 'foobar',
       expectedMessage: 'identifier not found: foobar',
     },
+    {
+      input: `{"name": "Monkey"}[fn(x) { x }];`,
+      expectedMessage: 'unusable as hash key: FUNCTION',
+    },
   ];
   tests.forEach((tt) => {
     const evaluated = testEvaluate(tt.input);
@@ -427,8 +431,53 @@ test('hash literals', () => {
 
   for (const [expectedKey, expectedValue] of expected) {
     const pair = result.pairs.get(expectedKey);
-    testIntegerObject(pair!.value, expectedValue);
+    testIntegerObject(pair!.value, expectedValue);  // eslint-disable-line @typescript-eslint/no-non-null-assertion
   }
+});
+
+test('hash index expressions', () => {
+  const tests: Array<{
+    input: string;
+    expected: number | undefined;
+  }> = [
+    {
+      input: `{"foo": 5}["foo"]`,
+      expected: 5,
+    },
+    {
+      input: `{"foo": 5}["bar"]`,
+      expected: undefined,
+    },
+    {
+      input: `let key = "foo"; {"foo": 5}[key]`,
+      expected: 5,
+    },
+    {
+      input: `{}["foo"]`,
+      expected: undefined,
+    },
+    {
+      input: `{5: 5}[5]`,
+      expected: 5,
+    },
+    {
+      input: `{true: 5}[true]`,
+      expected: 5,
+    },
+    {
+      input: `{false: 5}[false]`,
+      expected: 5,
+    },
+  ];
+
+  tests.forEach((tt) => {
+    const evaluated = testEvaluate(tt.input);
+    if (typeof tt.expected === 'number') {
+      testIntegerObject(evaluated, tt.expected);
+    } else {
+      testNullObject(evaluated);
+    }
+  });
 });
 
 const testEvaluate = (input: string): BaseObject => {

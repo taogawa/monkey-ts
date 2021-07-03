@@ -587,7 +587,7 @@ test('parsing hash literals string keys', () => {
     const literal = key as StringLiteral;
     expect(literal.constructor).toBe(StringLiteral);
     const expectedValue = expected[literal.toString()];
-    testIntegerLiteral(value, expectedValue!);
+    testIntegerLiteral(value, expectedValue!);  // eslint-disable-line @typescript-eslint/no-non-null-assertion
   });
 });
 

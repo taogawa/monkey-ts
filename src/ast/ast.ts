@@ -334,7 +334,7 @@ export class HashLiteral implements Expression {
   }
 
   toString(): string {
-    let pairs: string[] = [];
+    const pairs: string[] = [];
     this.pairs.forEach((value, key) => {
       pairs.push(`${key.toString()}:${value.toString()}`);
     });

@@ -169,7 +169,7 @@ export class HashObject implements BaseObject {
   }
 
   inspect(): string {
-    let pairs: string[] = [];
+    const pairs: string[] = [];
     this.pairs.forEach((value, key) => {
       pairs.push(`${key.toString()}:${value.toString()}`);
     });
