@@ -9,8 +9,9 @@ import {
   FunctionObject,
   StringObject,
   ArrayObject,
+  HashObject,
 } from '../object/object';
-import { evaluate } from '../evaluator/evaluator';
+import { evaluate, TRUE, FALSE } from '../evaluator/evaluator';
 import { Environment } from '../object/environment';
 
 test('eval integer expression', () => {
@@ -395,6 +396,39 @@ test('index expressions', () => {
       testNullObject(evaluated);
     }
   });
+});
+
+test('hash literals', () => {
+  const input = `let two = "two";
+  {
+    "one": 10 - 9,
+    two: 1 + 1,
+    "thr" + "ee": 6 / 2,
+    4: 4,
+    true: 5,
+    false: 6
+  }`;
+
+  const evaluated = testEvaluate(input);
+
+  const result = evaluated as HashObject;
+  expect(result.constructor).toBe(HashObject);
+
+  const expected: Map<string, number> = new Map<string, number>([
+    [new StringObject('one').hashKey(), 1],
+    [new StringObject('two').hashKey(), 2],
+    [new StringObject('three').hashKey(), 3],
+    [new IntegerObject(4).hashKey(), 4],
+    [TRUE.hashKey(), 5],
+    [FALSE.hashKey(), 6],
+  ]);
+
+  expect(result.pairs.size).toBe(expected.size);
+
+  for (const [expectedKey, expectedValue] of expected) {
+    const pair = result.pairs.get(expectedKey);
+    testIntegerObject(pair!.value, expectedValue);
+  }
 });
 
 const testEvaluate = (input: string): BaseObject => {

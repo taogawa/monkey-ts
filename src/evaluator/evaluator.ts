@@ -17,6 +17,7 @@ import {
   StringLiteral,
   ArrayLiteral,
   IndexExpression,
+  HashLiteral,
 } from '../ast/ast';
 import {
   BaseObject,
@@ -30,6 +31,9 @@ import {
   StringObject,
   Builtin,
   ArrayObject,
+  HashPair,
+  Hashable,
+  HashObject,
 } from '../object/object';
 import { Environment } from '../object/environment';
 import { Builtins } from './builtins';
@@ -125,6 +129,8 @@ export const evaluate = (node: Node, env: Environment): BaseObject => {
       return index;
     }
     return evaluateIndexExpression(left, index);
+  } else if (node instanceof HashLiteral) {
+    return evaluateHashLiteral(node, env);
   }
   return NULL;
 };
@@ -376,6 +382,30 @@ const evaluateArrayIndexExpression = (
   return arrayObject.elements[idx];
 };
 
+const evaluateHashLiteral = (
+  node: HashLiteral,
+  env: Environment
+): BaseObject => {
+  const pairs = new Map<string, HashPair>();
+
+  for (const [keyNode, valueNode] of node.pairs) {
+    const key = evaluate(keyNode, env);
+    if (isError(key)) {
+      return key;
+    }
+    if (!isHashable(key)) {
+      return new ErrorObject(`unusable as hash key: ${key.type()}`);
+    }
+    const value = evaluate(valueNode, env);
+    if (isError(value)) {
+      return value;
+    }
+    const hashed = key.hashKey();
+    pairs.set(hashed, new HashPair(key, value));
+  }
+  return new HashObject(pairs);
+};
+
 const applyFunction = (fn: BaseObject, args: BaseObject[]): BaseObject => {
   if (fn instanceof FunctionObject) {
     const extendedEnv = extendFunctionEnv(fn, args);
@@ -421,4 +451,8 @@ const isIntegerObject = (obj: BaseObject): obj is IntegerObject => {
 
 const isStringObject = (obj: BaseObject): obj is StringObject => {
   return obj.type() === ObjectTypes.STRING_OBJ;
+};
+
+const isHashable = (obj: BaseObject): obj is Hashable => {
+  return obj != null && (obj as Hashable).hashKey !== undefined;
 };

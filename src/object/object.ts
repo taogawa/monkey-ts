@@ -13,6 +13,7 @@ export const ObjectTypes = {
   FUNCTION_OBJ: 'FUNCTION',
   BUILTIN_OBJ: 'BUILTIN',
   ARRAY_OBJ: 'ARRAY',
+  HASH_OBJ: 'HASH',
 };
 
 export type BaseObject = {
@@ -22,7 +23,15 @@ export type BaseObject = {
 
 type BuiltinFunction = (...args: BaseObject[]) => BaseObject;
 
-export class IntegerObject implements BaseObject {
+export class HashPair {
+  public constructor(public key: BaseObject, public value: BaseObject) {}
+}
+
+export type Hashable = BaseObject & {
+  hashKey(): string;
+};
+
+export class IntegerObject implements Hashable {
   constructor(public value: number) {}
 
   type(): ObjectType {
@@ -33,12 +42,12 @@ export class IntegerObject implements BaseObject {
     return this.value.toString();
   }
 
-  hashKey(): HashKey {
-    return new HashKey(this.type(), this.value);
+  hashKey(): string {
+    return `${this.type()}#${this.value}`;
   }
 }
 
-export class BooleanObject implements BaseObject {
+export class BooleanObject implements Hashable {
   constructor(public value: boolean) {}
 
   type(): ObjectType {
@@ -49,8 +58,8 @@ export class BooleanObject implements BaseObject {
     return this.value.toString();
   }
 
-  hashKey(): HashKey {
-    return new HashKey(this.type(), this.value ? 1 : 0);
+  hashKey(): string {
+    return `${this.type()}#${this.value ? 1 : 0}`;
   }
 }
 
@@ -104,7 +113,7 @@ export class FunctionObject implements BaseObject {
   }
 }
 
-export class StringObject implements BaseObject {
+export class StringObject implements Hashable {
   constructor(public value: string) {}
 
   type(): ObjectType {
@@ -115,13 +124,13 @@ export class StringObject implements BaseObject {
     return this.value;
   }
 
-  hashKey(): HashKey {
+  hashKey(): string {
     let hash = 0;
     for (let i = 0; i < this.value.length; i++) {
       hash = hash * 31 + this.value.charCodeAt(i);
       hash = hash | 0;
     }
-    return new HashKey(this.type(), hash);
+    return `${this.type}#${hash}`;
   }
 }
 
@@ -152,6 +161,18 @@ export class ArrayObject implements BaseObject {
   }
 }
 
-export class HashKey {
-  constructor(public type: ObjectType, public value: number) {}
+export class HashObject implements BaseObject {
+  constructor(public pairs: Map<string, HashPair>) {}
+
+  type(): ObjectType {
+    return ObjectTypes.HASH_OBJ;
+  }
+
+  inspect(): string {
+    let pairs: string[] = [];
+    this.pairs.forEach((value, key) => {
+      pairs.push(`${key.toString()}:${value.toString()}`);
+    });
+    return `{${pairs.join(', ')}]}`;
+  }
 }
